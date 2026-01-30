@@ -572,7 +572,6 @@ export const SettingsPage: React.FC = () => {
                                 <label className="block text-base font-medium text-gray-900 dark:text-white mb-1">Пагинация (Строк на странице)</label>
                                 <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
                                   Количество элементов, отображаемых в таблицах.
-                                  <span className="ml-2 text-xs text-accent-600 dark:text-accent-400 bg-accent-50 dark:bg-gray-700 px-1 rounded">Глобальная настройка</span>
                                 </p>
 
                                 <div className="flex items-center gap-4">

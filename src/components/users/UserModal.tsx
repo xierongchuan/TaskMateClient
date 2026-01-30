@@ -232,7 +232,7 @@ export const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, user }) =
               </div>
             </div>
 
-            <div className="bg-gray-50 dark:bg-gray-700/50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 sm:gap-3 rounded-b-2xl">
+            <div className="bg-gray-50 dark:bg-gray-700/50 px-4 py-3 sm:px-6 flex flex-col-reverse gap-2 sm:flex-row-reverse sm:gap-3 rounded-b-2xl [&>button]:w-full [&>button]:sm:w-auto">
               <Button
                 type="submit"
                 variant="primary"

@@ -146,7 +146,7 @@ const ModalFooter: React.FC<ModalFooterProps> = ({
   className = '',
 }) => {
   const footerClasses = [
-    'bg-gray-50 dark:bg-gray-700/50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse sm:gap-3 rounded-b-2xl',
+    'bg-gray-50 dark:bg-gray-700/50 px-4 py-3 sm:px-6 flex flex-col-reverse gap-2 sm:flex-row-reverse sm:gap-3 rounded-b-2xl [&>button]:w-full [&>button]:sm:w-auto',
     className,
   ].filter(Boolean).join(' ');
 

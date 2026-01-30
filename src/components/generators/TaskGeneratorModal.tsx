@@ -476,7 +476,7 @@ export const TaskGeneratorModal: React.FC<TaskGeneratorModalProps> = ({
               </div>
             </div>
 
-            <div className="bg-gray-50 dark:bg-gray-700 px-6 py-4 flex justify-end space-x-3 rounded-b-2xl">
+            <div className="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 flex flex-col-reverse gap-2 sm:flex-row-reverse sm:gap-3 rounded-b-2xl [&>button]:w-full [&>button]:sm:w-auto">
               <Button
                 type="button"
                 variant="outline"

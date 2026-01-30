@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useShifts, useCurrentShifts, useShiftsStatistics } from '../hooks/useShifts';
 import { useWorkspace } from '../hooks/useWorkspace';
 import { useResponsiveViewMode } from '../hooks/useResponsiveViewMode';
 import { usePagination } from '../hooks/usePagination';
 import { formatDateTime } from '../utils/dateTime';
+import { usersApi } from '../api/users';
+import { dealershipsApi } from '../api/dealerships';
 import type { ShiftsFilters, Shift } from '../types/shift';
 import {
   BriefcaseIcon,
@@ -26,6 +29,7 @@ import {
   PageHeader,
   ViewModeToggle,
   FilterPanel,
+  Pagination,
 } from '../components/ui';
 import { ShiftPhotoViewer } from '../components/shifts/ShiftPhotoViewer';
 
@@ -34,17 +38,41 @@ export const ShiftsPage: React.FC = () => {
   const { dealershipId: workspaceDealershipId } = useWorkspace();
   const { viewMode, setViewMode, isMobile } = useResponsiveViewMode('list', 'grid', 768, 'view_mode_shifts');
   const { limit } = usePagination();
+  const [page, setPage] = useState(1);
   const [filters, setFilters] = useState<ShiftsFilters>({
     status: searchParams.get('status') || '',
     is_late: searchParams.get('is_late') === 'true' ? true : searchParams.get('is_late') === 'false' ? false : undefined,
   });
   const [showFilters, setShowFilters] = useState(false);
   const [expandedShiftId, setExpandedShiftId] = useState<number | null>(null);
+  const [dealershipFilter, setDealershipFilter] = useState<string>('');
+  const [employeeFilter, setEmployeeFilter] = useState<string>('');
+
+  // Эффективный dealership_id: из навбара или из фильтра
+  const effectiveDealershipId = workspaceDealershipId ?? (dealershipFilter ? Number(dealershipFilter) : undefined);
+
+  // Список автосалонов для фильтра (только если в навбаре "Все автосалоны")
+  const { data: dealershipsData } = useQuery({
+    queryKey: ['dealerships-for-shift-filter'],
+    queryFn: () => dealershipsApi.getDealerships({ per_page: 100 }),
+    enabled: !workspaceDealershipId,
+  });
+
+  // Список сотрудников для фильтра (зависит от выбранного автосалона)
+  const { data: usersData } = useQuery({
+    queryKey: ['users-for-shift-filter', effectiveDealershipId],
+    queryFn: () => usersApi.getUsers({
+      per_page: 100,
+      dealership_id: effectiveDealershipId,
+    }),
+  });
 
   const shiftsQueryFilters: ShiftsFilters = {
     ...filters,
     per_page: limit,
-    ...(workspaceDealershipId ? { dealership_id: workspaceDealershipId } : {}),
+    page,
+    ...(effectiveDealershipId ? { dealership_id: effectiveDealershipId } : {}),
+    ...(employeeFilter ? { user_id: Number(employeeFilter) } : {}),
   };
 
   const { data: shiftsData, isLoading, error } = useShifts(shiftsQueryFilters);
@@ -69,10 +97,13 @@ export const ShiftsPage: React.FC = () => {
     return Array.from(grouped.values());
   }, [currentShifts]);
 
-  const hasActiveFilters = !!(filters.status || filters.shift_type || filters.is_late !== undefined);
+  const hasActiveFilters = !!(filters.status || filters.shift_type || filters.is_late !== undefined || dealershipFilter || employeeFilter);
 
   const clearFilters = () => {
     setFilters({ status: '', is_late: undefined });
+    setDealershipFilter('');
+    setEmployeeFilter('');
+    setPage(1);
   };
 
   const getStatusBadge = (status: string) => {
@@ -264,12 +295,12 @@ export const ShiftsPage: React.FC = () => {
         onClear={hasActiveFilters ? clearFilters : undefined}
         className="mb-6"
       >
-        <FilterPanel.Grid columns={3}>
+        <FilterPanel.Grid columns={!workspaceDealershipId ? 5 : 4}>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Статус</label>
             <select
               value={filters.status}
-              onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+              onChange={(e) => { setFilters({ ...filters, status: e.target.value }); setPage(1); }}
               className={selectClass}
             >
               <option value="">Все</option>
@@ -281,7 +312,7 @@ export const ShiftsPage: React.FC = () => {
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Тип смены</label>
             <select
               value={filters.shift_type || ''}
-              onChange={(e) => setFilters({ ...filters, shift_type: e.target.value || undefined })}
+              onChange={(e) => { setFilters({ ...filters, shift_type: e.target.value || undefined }); setPage(1); }}
               className={selectClass}
             >
               <option value="">Все</option>
@@ -295,17 +326,46 @@ export const ShiftsPage: React.FC = () => {
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Опоздания</label>
             <select
               value={filters.is_late === undefined ? '' : filters.is_late ? 'true' : 'false'}
-              onChange={(e) =>
+              onChange={(e) => {
                 setFilters({
                   ...filters,
                   is_late: e.target.value === '' ? undefined : e.target.value === 'true',
-                })
-              }
+                });
+                setPage(1);
+              }}
               className={selectClass}
             >
               <option value="">Все</option>
               <option value="true">Только опоздания</option>
               <option value="false">Без опозданий</option>
+            </select>
+          </div>
+          {!workspaceDealershipId && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Автосалон</label>
+              <select
+                value={dealershipFilter}
+                onChange={(e) => { setDealershipFilter(e.target.value); setEmployeeFilter(''); setPage(1); }}
+                className={selectClass}
+              >
+                <option value="">Все</option>
+                {dealershipsData?.data?.map((d) => (
+                  <option key={d.id} value={d.id}>{d.name}</option>
+                ))}
+              </select>
+            </div>
+          )}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Сотрудник</label>
+            <select
+              value={employeeFilter}
+              onChange={(e) => { setEmployeeFilter(e.target.value); setPage(1); }}
+              className={selectClass}
+            >
+              <option value="">Все</option>
+              {usersData?.data?.map((u) => (
+                <option key={u.id} value={u.id}>{u.full_name}</option>
+              ))}
             </select>
           </div>
         </FilterPanel.Grid>
@@ -422,6 +482,17 @@ export const ShiftsPage: React.FC = () => {
                 </div>
               )}
             </>
+          )}
+
+          {shiftsData && shiftsData.last_page > 1 && (
+            <Pagination
+              currentPage={page}
+              totalPages={shiftsData.last_page}
+              onPageChange={setPage}
+              total={shiftsData.total}
+              perPage={shiftsData.per_page}
+              showInfo
+            />
           )}
         </div>
       </div>

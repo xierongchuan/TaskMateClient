@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../hooks/useAuth';
 import { dashboardApi } from '../api/dashboard';
-import { tasksApi } from '../api/tasks';
 import { formatTime, formatDateTime, formatCurrentTime } from '../utils/dateTime';
 import {
   CheckCircleIcon,
@@ -60,15 +59,6 @@ export const DashboardPage: React.FC = () => {
     setIsDetailsOpen(true);
   };
 
-  const handleOpenTaskById = async (taskId: number) => {
-    try {
-      const task = await tasksApi.getTask(taskId);
-      setSelectedTask(task);
-      setIsDetailsOpen(true);
-    } catch (error) {
-      console.error('Failed to load task:', error);
-    }
-  };
 
   if (isLoading) {
     return (

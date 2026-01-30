@@ -97,9 +97,19 @@ export const ReportsPage: React.FC = () => {
   };
 
   const getPerformanceColor = (score: number) => {
-    if (score >= 95) return 'text-green-600';
-    if (score >= 85) return 'text-yellow-600';
-    return 'text-red-600';
+    if (score >= 95) return 'text-green-600 dark:text-green-400';
+    if (score >= 85) return 'text-yellow-600 dark:text-yellow-400';
+    return 'text-red-600 dark:text-red-400';
+  };
+
+  const getPerformanceBarColor = (score: number) => {
+    if (score >= 95) return 'bg-green-500';
+    if (score >= 85) return 'bg-yellow-500';
+    return 'bg-red-500';
+  };
+
+  const getInitials = (name: string) => {
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
 
   const getProgressBarColor = (status: string) => {
@@ -306,40 +316,97 @@ export const ReportsPage: React.FC = () => {
 
           {/* Employee Performance */}
           <Section title="Эффективность сотрудников">
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto rounded-xl">
               <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                 <thead className="bg-gray-50 dark:bg-gray-700/50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Сотрудник</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Выполнено</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Просрочено</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Опоздания</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Рейтинг</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">#</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Сотрудник</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Задачи</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Просрочено</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Смены</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[180px]">Рейтинг</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                  {reportData.employees_performance.map((employee) => (
+                  {reportData.employees_performance.map((employee, index) => (
                     <tr
                       key={employee.employee_id}
                       onClick={() => setSelectedEmployee(employee)}
                       className="hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer transition-colors"
                     >
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                        {employee.employee_name}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600">
-                        {employee.completed_tasks}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-red-600">
-                        {employee.overdue_tasks}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-yellow-600">
-                        {employee.late_shifts}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`text-sm font-semibold ${getPerformanceColor(employee.performance_score)}`}>
-                          {employee.performance_score}/100
+                      {/* Номер в рейтинге */}
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <span className={`text-sm font-bold ${index === 0 ? 'text-yellow-500' : index === 1 ? 'text-gray-400' : index === 2 ? 'text-amber-600' : 'text-gray-500 dark:text-gray-400'}`}>
+                          {index + 1}
                         </span>
+                      </td>
+
+                      {/* Сотрудник с аватаром */}
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <div className="flex items-center gap-3">
+                          <div className="flex-shrink-0 w-9 h-9 rounded-full bg-accent/10 dark:bg-accent/20 flex items-center justify-center">
+                            <span className="text-xs font-semibold text-accent">{getInitials(employee.employee_name)}</span>
+                          </div>
+                          <span className="text-sm font-medium text-gray-900 dark:text-white">{employee.employee_name}</span>
+                        </div>
+                      </td>
+
+                      {/* Задачи: выполнено/всего + прогресс-бар */}
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <div className="flex flex-col gap-1">
+                          <span className="text-sm text-gray-900 dark:text-white">
+                            <span className="font-semibold text-green-600 dark:text-green-400">{employee.completed_tasks}</span>
+                            <span className="text-gray-400 dark:text-gray-500"> / {employee.total_tasks}</span>
+                          </span>
+                          <div className="w-20 bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+                            <div
+                              className="h-1.5 rounded-full bg-green-500 transition-all"
+                              style={{ width: `${employee.completion_rate}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* Просрочено */}
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <Badge variant={employee.overdue_tasks > 0 ? 'danger' : 'success'} size="sm">
+                          {employee.overdue_tasks}
+                        </Badge>
+                      </td>
+
+                      {/* Смены: опоздания/всего + среднее опоздание */}
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <div className="flex flex-col gap-0.5">
+                          <span className="text-sm text-gray-900 dark:text-white">
+                            {employee.late_shifts > 0 ? (
+                              <>
+                                <span className="font-semibold text-yellow-600 dark:text-yellow-400">{employee.late_shifts}</span>
+                                <span className="text-gray-400 dark:text-gray-500"> / {employee.total_shifts}</span>
+                              </>
+                            ) : (
+                              <span className="text-gray-400 dark:text-gray-500">{employee.total_shifts} смен</span>
+                            )}
+                          </span>
+                          {employee.late_shifts > 0 && employee.avg_late_minutes > 0 && (
+                            <span className="text-xs text-gray-400 dark:text-gray-500">~{employee.avg_late_minutes} мин</span>
+                          )}
+                        </div>
+                      </td>
+
+                      {/* Рейтинг с прогресс-баром */}
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1 w-16 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                            <div
+                              className={`h-2 rounded-full transition-all ${getPerformanceBarColor(employee.performance_score)}`}
+                              style={{ width: `${employee.performance_score}%` }}
+                            ></div>
+                          </div>
+                          <span className={`text-sm font-semibold min-w-[42px] text-right ${getPerformanceColor(employee.performance_score)}`}>
+                            {employee.performance_score}
+                          </span>
+                        </div>
                       </td>
                     </tr>
                   ))}

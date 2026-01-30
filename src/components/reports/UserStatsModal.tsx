@@ -13,9 +13,13 @@ import { DonutChart, DonutChartLegend } from '../ui/DonutChart';
 export interface EmployeePerformance {
   employee_id: number;
   employee_name: string;
+  total_tasks: number;
   completed_tasks: number;
+  completion_rate: number;
   overdue_tasks: number;
+  total_shifts: number;
   late_shifts: number;
+  avg_late_minutes: number;
   performance_score: number;
 }
 
@@ -36,10 +40,8 @@ export const UserStatsModal: React.FC<UserStatsModalProps> = ({
 
   if (!employee) return null;
 
-  const totalTasks = employee.completed_tasks + employee.overdue_tasks;
-  const completionRate = totalTasks > 0
-    ? Math.round((employee.completed_tasks / totalTasks) * 100)
-    : 100;
+  const totalTasks = employee.total_tasks;
+  const completionRate = employee.completion_rate;
 
   const getPerformanceColor = (score: number) => {
     if (score >= 95) return 'text-green-600 dark:text-green-400';
@@ -61,7 +63,7 @@ export const UserStatsModal: React.FC<UserStatsModalProps> = ({
   const stats = [
     {
       label: 'Выполнено',
-      value: employee.completed_tasks,
+      value: `${employee.completed_tasks} / ${employee.total_tasks}`,
       icon: CheckCircleIcon,
       color: 'text-green-600 dark:text-green-400',
       bg: 'bg-green-50 dark:bg-green-900/20',
@@ -74,8 +76,8 @@ export const UserStatsModal: React.FC<UserStatsModalProps> = ({
       bg: 'bg-red-50 dark:bg-red-900/20',
     },
     {
-      label: 'Опоздания',
-      value: employee.late_shifts,
+      label: 'Опоздания на смены',
+      value: employee.total_shifts > 0 ? `${employee.late_shifts} / ${employee.total_shifts}` : '—',
       icon: ClockIcon,
       color: 'text-yellow-600 dark:text-yellow-400',
       bg: 'bg-yellow-50 dark:bg-yellow-900/20',

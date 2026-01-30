@@ -20,9 +20,13 @@ export interface ReportData {
   employees_performance: Array<{
     employee_id: number;
     employee_name: string;
+    total_tasks: number;
     completed_tasks: number;
+    completion_rate: number;
     overdue_tasks: number;
+    total_shifts: number;
     late_shifts: number;
+    avg_late_minutes: number;
     performance_score: number;
   }>;
   daily_stats: Array<{

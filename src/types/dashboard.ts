@@ -43,6 +43,9 @@ export interface DashboardData {
     dealership_name: string;
     total_employees: number;
     on_shift_count: number;
+    shift_1_start_time?: string;
+    shift_2_start_time?: string;
+    is_today_holiday?: boolean;
   }>;
   today_tasks_list?: Task[];
 }

@@ -264,7 +264,21 @@ export const DashboardPage: React.FC = () => {
                         ))}
                       </div>
                     ) : (
-                      <p className="text-xs text-gray-400 dark:text-gray-500 text-center py-2">Нет сотрудников на смене</p>
+                      <div className="text-xs text-gray-400 dark:text-gray-500 text-center py-2">
+                        {ds.is_today_holiday ? (
+                          <p>Сегодня выходной</p>
+                        ) : (
+                          <>
+                            <p>Нет сотрудников на смене</p>
+                            {(ds.shift_1_start_time || ds.shift_2_start_time) && (
+                              <p className="mt-1">
+                                <ClockIcon className="w-3 h-3 inline-block mr-1 -mt-0.5" />
+                                Смена 1: {ds.shift_1_start_time || '—'} / Смена 2: {ds.shift_2_start_time || '—'}
+                              </p>
+                            )}
+                          </>
+                        )}
+                      </div>
                     )}
                   </div>
                 );
@@ -274,6 +288,7 @@ export const DashboardPage: React.FC = () => {
             <EmptyState
               icon={<UserIcon />}
               title="Нет активных смен"
+              description="Смены ещё не открыты"
             />
           )}
         </Section>

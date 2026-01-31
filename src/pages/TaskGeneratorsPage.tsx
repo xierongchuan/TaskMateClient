@@ -67,6 +67,8 @@ export const TaskGeneratorsPage: React.FC = () => {
     search: '',
     is_active: undefined,
     recurrence: undefined,
+    sort_by: 'created_at',
+    sort_dir: 'desc',
   });
 
   useEffect(() => {
@@ -179,9 +181,18 @@ export const TaskGeneratorsPage: React.FC = () => {
       search: '',
       is_active: undefined,
       recurrence: undefined,
+      sort_by: 'created_at',
+      sort_dir: 'desc',
     });
     setPage(1);
   };
+
+  const sortOptions = [
+    { value: 'created_at_desc', label: 'Сначала новые' },
+    { value: 'created_at_asc', label: 'Сначала старые' },
+    { value: 'title_asc', label: 'По названию А-Я' },
+    { value: 'title_desc', label: 'По названию Я-А' },
+  ];
 
   const hasActiveFilters = filters.search || filters.is_active !== undefined || filters.recurrence;
 
@@ -300,6 +311,18 @@ export const TaskGeneratorsPage: React.FC = () => {
             value={filters.recurrence || ''}
             onChange={(e) => setFilters(prev => ({ ...prev, recurrence: e.target.value as TaskGeneratorFilters['recurrence'] || undefined }))}
             options={recurrenceOptions}
+          />
+
+          <Select
+            label="Сортировка"
+            value={`${filters.sort_by}_${filters.sort_dir}`}
+            onChange={(e) => {
+              const parts = e.target.value.split('_');
+              const sortDir = parts.pop() as 'asc' | 'desc';
+              const sortBy = parts.join('_');
+              setFilters(prev => ({ ...prev, sort_by: sortBy, sort_dir: sortDir as 'asc' | 'desc' }));
+            }}
+            options={sortOptions}
           />
         </FilterPanel.Grid>
       </FilterPanel>

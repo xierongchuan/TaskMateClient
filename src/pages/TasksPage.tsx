@@ -76,6 +76,8 @@ export const TasksPage: React.FC = () => {
     tags: searchParams.getAll('tags') || [],
     priority: searchParams.get('priority') || '',
     from_generator: searchParams.get('from_generator') || '',
+    sort_by: 'created_at',
+    sort_dir: 'desc' as 'asc' | 'desc',
   });
 
   useEffect(() => {
@@ -429,6 +431,8 @@ export const TasksPage: React.FC = () => {
       tags: [],
       priority: '',
       from_generator: '',
+      sort_by: 'created_at',
+      sort_dir: 'desc',
     });
   };
 
@@ -511,6 +515,15 @@ export const TasksPage: React.FC = () => {
     { value: '', label: 'Все источники' },
     { value: 'yes', label: 'Генератор' },
     { value: 'no', label: 'Вручную' },
+  ];
+
+  const sortOptions = [
+    { value: 'created_at_desc', label: 'Сначала новые' },
+    { value: 'created_at_asc', label: 'Сначала старые' },
+    { value: 'priority_desc', label: 'По приоритету ↓' },
+    { value: 'priority_asc', label: 'По приоритету ↑' },
+    { value: 'title_asc', label: 'По названию А-Я' },
+    { value: 'title_desc', label: 'По названию Я-А' },
   ];
 
   const hasActiveFilters = filters.search || filters.status || filters.priority ||
@@ -600,6 +613,18 @@ export const TasksPage: React.FC = () => {
             value={filters.from_generator}
             onChange={(e) => setFilters({ ...filters, from_generator: e.target.value })}
             options={sourceOptions}
+          />
+
+          <Select
+            label="Сортировка"
+            value={`${filters.sort_by}_${filters.sort_dir}`}
+            onChange={(e) => {
+              const parts = e.target.value.split('_');
+              const sortDir = parts.pop() as 'asc' | 'desc';
+              const sortBy = parts.join('_');
+              setFilters({ ...filters, sort_by: sortBy, sort_dir: sortDir });
+            }}
+            options={sortOptions}
           />
 
           <div>

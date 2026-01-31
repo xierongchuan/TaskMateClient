@@ -54,12 +54,14 @@ export const UsersPage: React.FC = () => {
     search: string;
     role: string;
     dealership_id: number | undefined;
-
+    sort_by: string;
+    sort_dir: 'asc' | 'desc';
   }>({
     search: '',
     role: '',
     dealership_id: undefined,
-
+    sort_by: 'created_at',
+    sort_dir: 'desc' as 'asc' | 'desc',
   });
 
   // Сброс страницы при изменении фильтров
@@ -117,7 +119,8 @@ export const UsersPage: React.FC = () => {
       search: '',
       role: '',
       dealership_id: undefined,
-
+      sort_by: 'created_at',
+      sort_dir: 'desc',
     });
     setPage(1);
   };
@@ -156,6 +159,13 @@ export const UsersPage: React.FC = () => {
       value: d.id.toString(),
       label: d.name,
     })),
+  ];
+
+  const sortOptions = [
+    { value: 'created_at_desc', label: 'Сначала новые' },
+    { value: 'created_at_asc', label: 'Сначала старые' },
+    { value: 'full_name_asc', label: 'По имени А-Я' },
+    { value: 'full_name_desc', label: 'По имени Я-А' },
   ];
 
   const hasActiveFilters = filters.search || filters.role || filters.dealership_id;
@@ -218,7 +228,17 @@ export const UsersPage: React.FC = () => {
             options={dealershipOptions}
           />
 
-
+          <Select
+            label="Сортировка"
+            value={`${filters.sort_by}_${filters.sort_dir}`}
+            onChange={(e) => {
+              const parts = e.target.value.split('_');
+              const sortDir = parts.pop() as 'asc' | 'desc';
+              const sortBy = parts.join('_');
+              setFilters({ ...filters, sort_by: sortBy, sort_dir: sortDir });
+            }}
+            options={sortOptions}
+          />
         </FilterPanel.Grid>
       </FilterPanel>
 

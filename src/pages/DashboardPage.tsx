@@ -270,10 +270,12 @@ export const DashboardPage: React.FC = () => {
                         ) : (
                           <>
                             <p>Нет сотрудников на смене</p>
-                            {(ds.shift_1_start_time || ds.shift_2_start_time) && (
+                            {ds.shift_schedules && ds.shift_schedules.length > 0 && (
                               <p className="mt-1">
                                 <ClockIcon className="w-3 h-3 inline-block mr-1 -mt-0.5" />
-                                Смена 1: {ds.shift_1_start_time || '—'} / Смена 2: {ds.shift_2_start_time || '—'}
+                                {ds.shift_schedules.map((s, i) => (
+                                  <span key={s.id}>{i > 0 ? ' / ' : ''}{s.name}: {s.start_time?.substring(0, 5)}-{s.end_time?.substring(0, 5)}</span>
+                                ))}
                               </p>
                             )}
                           </>

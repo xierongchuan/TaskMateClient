@@ -106,8 +106,6 @@ export const settingsApi = {
 
     // Determine which fields are inherited (not set for dealership)
     const inheritedFields: (keyof DealershipBotConfig)[] = [];
-    if (!dealershipConfig.data.data.shift_1_start_time) inheritedFields.push('shift_1_start_time');
-    if (!dealershipConfig.data.data.shift_1_end_time) inheritedFields.push('shift_1_end_time');
     if (!dealershipConfig.data.data.late_tolerance_minutes) inheritedFields.push('late_tolerance_minutes');
 
     return {

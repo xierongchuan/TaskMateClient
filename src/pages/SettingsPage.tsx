@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useShiftConfig, useNotificationConfig, useArchiveConfig, useUpdateShiftConfig, useUpdateNotificationConfig, useUpdateArchiveConfig, useDealershipSettings, useTaskConfig, useUpdateTaskConfig, useSetting, useUpdateSetting, useUpdateSettingByKey } from '../hooks/useSettings';
 import { useDealership, useUpdateDealership } from '../hooks/useDealerships';
+import { useShiftSchedules, useCreateShiftSchedule, useUpdateShiftSchedule, useDeleteShiftSchedule } from '../hooks/useShiftSchedules';
 import { useTheme, ACCENT_COLOR_OPTIONS } from '../context/ThemeContext';
 import { usePermissions } from '../hooks/usePermissions';
 import { useWorkspace } from '../hooks/useWorkspace';
@@ -60,14 +61,16 @@ export const SettingsPage: React.FC = () => {
 
   // Initialize shift config with default values
   const [shiftConfig, setShiftConfig] = useState<ShiftConfig>({
-    shift_1_start_time: '09:00',
-    shift_1_end_time: '18:00',
-    shift_2_start_time: '18:00',
-    shift_2_end_time: '02:00',
     late_tolerance_minutes: 15,
     work_days: [1, 2, 3, 4, 5],
     timezone: 'Europe/Moscow',
   });
+
+  // Shift schedules management
+  const [newScheduleName, setNewScheduleName] = useState('');
+  const [newScheduleStart, setNewScheduleStart] = useState('09:00');
+  const [newScheduleEnd, setNewScheduleEnd] = useState('18:00');
+  const [showAddSchedule, setShowAddSchedule] = useState(false);
 
   // Initialize notification config with default values
   const [notificationConfig, setNotificationConfig] = useState<NotificationConfig>({
@@ -116,6 +119,10 @@ export const SettingsPage: React.FC = () => {
   const { data: maintenanceModeData, isLoading: maintenanceModeLoading } = useSetting('maintenance_mode');
   const { data: globalTimezoneData, isLoading: globalTimezoneLoading } = useSetting('global_timezone');
   const { data: dealershipData, isLoading: dealershipLoading } = useDealership(selectedDealershipId || 0);
+  const { data: shiftSchedulesData, isLoading: shiftSchedulesLoading } = useShiftSchedules(selectedDealershipId);
+  const createShiftScheduleMutation = useCreateShiftSchedule();
+  const updateShiftScheduleMutation = useUpdateShiftSchedule();
+  const deleteShiftScheduleMutation = useDeleteShiftSchedule();
 
   // Timezone state for current dealership
   const [dealershipTimezone, setDealershipTimezone] = useState('+05:00');
@@ -378,8 +385,8 @@ export const SettingsPage: React.FC = () => {
     );
   }
 
-  const isLoading = shiftConfigLoading || notificationConfigLoading || archiveConfigLoading || taskConfigLoading || maintenanceModeLoading || dealershipLoading || globalTimezoneLoading;
-  const isSaving = updateShiftConfigMutation.isPending || updateNotificationConfigMutation.isPending || updateArchiveConfigMutation.isPending || updateTaskConfigMutation.isPending || updateSettingMutation.isPending || updateSettingByKeyMutation.isPending || updateDealershipMutation.isPending || calendarSaving;
+  const isLoading = shiftConfigLoading || notificationConfigLoading || archiveConfigLoading || taskConfigLoading || maintenanceModeLoading || dealershipLoading || globalTimezoneLoading || shiftSchedulesLoading;
+  const isSaving = updateShiftConfigMutation.isPending || updateNotificationConfigMutation.isPending || updateArchiveConfigMutation.isPending || updateTaskConfigMutation.isPending || updateSettingMutation.isPending || updateSettingByKeyMutation.isPending || updateDealershipMutation.isPending || calendarSaving || createShiftScheduleMutation.isPending || updateShiftScheduleMutation.isPending || deleteShiftScheduleMutation.isPending;
 
   return (
     <PageContainer>
@@ -715,54 +722,158 @@ export const SettingsPage: React.FC = () => {
                       )}
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {/* Shift 1 */}
-                      <Card>
-                        <Card.Body>
-                          <h4 className="font-medium text-gray-900 dark:text-white mb-4 pb-2 border-b border-gray-100 dark:border-gray-700 flex items-center">
-                            <span className="w-6 h-6 rounded-full bg-accent-100 dark:bg-accent-900/50 text-accent-600 dark:text-accent-300 flex items-center justify-center text-xs mr-2">1</span>
-                            Первая смена
-                          </h4>
-                          <div className="grid grid-cols-2 gap-4">
-                            <Input
-                              type="time"
-                              label="Начало"
-                              value={shiftConfig.shift_1_start_time || ''}
-                              onChange={(e) => setShiftConfig({ ...shiftConfig, shift_1_start_time: e.target.value })}
-                            />
-                            <Input
-                              type="time"
-                              label="Конец"
-                              value={shiftConfig.shift_1_end_time || ''}
-                              onChange={(e) => setShiftConfig({ ...shiftConfig, shift_1_end_time: e.target.value })}
-                            />
-                          </div>
-                        </Card.Body>
-                      </Card>
+                    {/* Shift Schedules */}
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h4 className="font-medium text-gray-900 dark:text-white">Расписание смен</h4>
+                        {selectedDealershipId && (
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="primary"
+                            onClick={() => setShowAddSchedule(!showAddSchedule)}
+                          >
+                            {showAddSchedule ? 'Отмена' : '+ Добавить смену'}
+                          </Button>
+                        )}
+                      </div>
 
-                      {/* Shift 2 */}
-                      <Card>
-                        <Card.Body>
-                          <h4 className="font-medium text-gray-900 dark:text-white mb-4 pb-2 border-b border-gray-100 dark:border-gray-700 flex items-center">
-                            <span className="w-6 h-6 rounded-full bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-300 flex items-center justify-center text-xs mr-2">2</span>
-                            Вторая смена
-                          </h4>
-                          <div className="grid grid-cols-2 gap-4">
-                            <Input
-                              type="time"
-                              label="Начало"
-                              value={shiftConfig.shift_2_start_time || ''}
-                              onChange={(e) => setShiftConfig({ ...shiftConfig, shift_2_start_time: e.target.value })}
-                            />
-                            <Input
-                              type="time"
-                              label="Конец"
-                              value={shiftConfig.shift_2_end_time || ''}
-                              onChange={(e) => setShiftConfig({ ...shiftConfig, shift_2_end_time: e.target.value })}
-                            />
-                          </div>
-                        </Card.Body>
-                      </Card>
+                      {!selectedDealershipId && (
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          Выберите автосалон для управления расписанием смен
+                        </p>
+                      )}
+
+                      {/* Add new schedule form */}
+                      {showAddSchedule && selectedDealershipId && (
+                        <Card>
+                          <Card.Body>
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                              <Input
+                                label="Название"
+                                placeholder="Утренняя"
+                                value={newScheduleName}
+                                onChange={(e) => setNewScheduleName(e.target.value)}
+                              />
+                              <Input
+                                type="time"
+                                label="Начало"
+                                value={newScheduleStart}
+                                onChange={(e) => setNewScheduleStart(e.target.value)}
+                              />
+                              <Input
+                                type="time"
+                                label="Конец"
+                                value={newScheduleEnd}
+                                onChange={(e) => setNewScheduleEnd(e.target.value)}
+                              />
+                              <Button
+                                type="button"
+                                variant="primary"
+                                disabled={!newScheduleName.trim() || createShiftScheduleMutation.isPending}
+                                onClick={() => {
+                                  createShiftScheduleMutation.mutate({
+                                    dealership_id: selectedDealershipId,
+                                    name: newScheduleName.trim(),
+                                    start_time: newScheduleStart,
+                                    end_time: newScheduleEnd,
+                                  }, {
+                                    onSuccess: () => {
+                                      setNewScheduleName('');
+                                      setNewScheduleStart('09:00');
+                                      setNewScheduleEnd('18:00');
+                                      setShowAddSchedule(false);
+                                      showToast({ type: 'success', message: 'Смена создана' });
+                                    },
+                                    onError: (error: any) => {
+                                      showToast({ type: 'error', message: error?.response?.data?.message || 'Ошибка создания смены' });
+                                    },
+                                  });
+                                }}
+                              >
+                                Создать
+                              </Button>
+                            </div>
+                          </Card.Body>
+                        </Card>
+                      )}
+
+                      {/* Existing schedules */}
+                      {shiftSchedulesLoading ? (
+                        <Skeleton variant="list" count={2} />
+                      ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {(shiftSchedulesData?.data || []).map((schedule, index) => (
+                            <Card key={schedule.id}>
+                              <Card.Body>
+                                <div className="flex items-center justify-between mb-4 pb-2 border-b border-gray-100 dark:border-gray-700">
+                                  <h4 className="font-medium text-gray-900 dark:text-white flex items-center">
+                                    <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs mr-2 ${
+                                      index % 2 === 0
+                                        ? 'bg-accent-100 dark:bg-accent-900/50 text-accent-600 dark:text-accent-300'
+                                        : 'bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-300'
+                                    }`}>
+                                      {index + 1}
+                                    </span>
+                                    {schedule.name}
+                                    {schedule.is_night_shift && (
+                                      <MoonIcon className="w-4 h-4 ml-1 text-indigo-400" title="Ночная смена" />
+                                    )}
+                                  </h4>
+                                  <Button
+                                    type="button"
+                                    size="sm"
+                                    variant="ghost"
+                                    className="text-red-500 hover:text-red-700"
+                                    disabled={deleteShiftScheduleMutation.isPending}
+                                    onClick={() => {
+                                      deleteShiftScheduleMutation.mutate(schedule.id, {
+                                        onSuccess: () => showToast({ type: 'success', message: 'Смена удалена' }),
+                                        onError: (error: any) => showToast({ type: 'error', message: error?.response?.data?.message || 'Ошибка удаления' }),
+                                      });
+                                    }}
+                                  >
+                                    Удалить
+                                  </Button>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                  <Input
+                                    type="time"
+                                    label="Начало"
+                                    value={schedule.start_time?.substring(0, 5) || ''}
+                                    onChange={(e) => {
+                                      updateShiftScheduleMutation.mutate({
+                                        id: schedule.id,
+                                        data: { start_time: e.target.value },
+                                      }, {
+                                        onError: (error: any) => showToast({ type: 'error', message: error?.response?.data?.message || 'Ошибка обновления' }),
+                                      });
+                                    }}
+                                  />
+                                  <Input
+                                    type="time"
+                                    label="Конец"
+                                    value={schedule.end_time?.substring(0, 5) || ''}
+                                    onChange={(e) => {
+                                      updateShiftScheduleMutation.mutate({
+                                        id: schedule.id,
+                                        data: { end_time: e.target.value },
+                                      }, {
+                                        onError: (error: any) => showToast({ type: 'error', message: error?.response?.data?.message || 'Ошибка обновления' }),
+                                      });
+                                    }}
+                                  />
+                                </div>
+                              </Card.Body>
+                            </Card>
+                          ))}
+                          {selectedDealershipId && (shiftSchedulesData?.data || []).length === 0 && (
+                            <p className="col-span-2 text-center text-gray-500 dark:text-gray-400 py-8">
+                              Нет настроенных смен. Нажмите «Добавить смену» для создания.
+                            </p>
+                          )}
+                        </div>
+                      )}
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

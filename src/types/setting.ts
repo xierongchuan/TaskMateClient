@@ -15,13 +15,19 @@ export interface Setting {
   };
 }
 
+// Shift Schedule from shift_schedules table
+export interface ShiftScheduleConfig {
+  id: number;
+  name: string;
+  start_time: string;
+  end_time: string;
+  sort_order: number;
+}
+
 // Shift Configuration
 export interface ShiftConfig {
-  shift_1_start_time?: string;
-  shift_1_end_time?: string;
-  shift_2_start_time?: string;
-  shift_2_end_time?: string;
   late_tolerance_minutes?: number;
+  schedules?: ShiftScheduleConfig[];
   work_days?: number[]; // [1,2,3,4,5] for Mon-Fri
   timezone?: string;
 }
@@ -79,10 +85,6 @@ export interface UpdateSettingRequest {
 }
 
 export interface UpdateShiftConfigRequest {
-  shift_1_start_time?: string;
-  shift_1_end_time?: string;
-  shift_2_start_time?: string;
-  shift_2_end_time?: string;
   late_tolerance_minutes?: number;
   dealership_id?: number;
 }

@@ -14,10 +14,25 @@ export interface ShiftsFilters {
   page?: number;
 }
 
+export interface ShiftSchedule {
+  id: number;
+  dealership_id: number;
+  name: string;
+  sort_order: number;
+  start_time: string;
+  end_time: string;
+  is_active: boolean;
+  crosses_midnight: boolean;
+  is_night_shift: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Shift {
   id: number;
   user_id: number;
   dealership_id: number;
+  shift_schedule_id: number | null;
   shift_type: ShiftType;
   status: ShiftStatus;
   shift_start: string;
@@ -37,6 +52,10 @@ export interface Shift {
     full_name: string;
   };
   dealership?: {
+    id: number;
+    name: string;
+  };
+  schedule?: {
     id: number;
     name: string;
   };

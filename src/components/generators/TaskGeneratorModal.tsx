@@ -252,27 +252,22 @@ export const TaskGeneratorModal: React.FC<TaskGeneratorModalProps> = ({
     const recMinutes = toMinutes(recTime);
     const deadMinutes = toMinutes(deadTime);
 
-    // Check shift 1
-    const s1Start = config.shift_1_start_time ? toMinutes(config.shift_1_start_time) : null;
-    const s1End = config.shift_1_end_time ? toMinutes(config.shift_1_end_time) : null;
+    // Check against dynamic schedules
+    const schedules = config.schedules || [];
+    if (schedules.length === 0) return false; // No shifts configured = no warning
 
-    // Check shift 2
-    const s2Start = config.shift_2_start_time ? toMinutes(config.shift_2_start_time) : null;
-    const s2End = config.shift_2_end_time ? toMinutes(config.shift_2_end_time) : null;
+    const isInAnyShift = schedules.some((s) => {
+      const sStart = toMinutes(s.start_time);
+      const sEnd = toMinutes(s.end_time);
+      if (sEnd > sStart) {
+        // Normal shift (e.g. 09:00-18:00)
+        return recMinutes >= sStart && deadMinutes <= sEnd;
+      }
+      // Midnight-crossing shift (e.g. 22:00-06:00)
+      return recMinutes >= sStart || deadMinutes <= sEnd;
+    });
 
-    const isInShift1 = s1Start !== null && s1End !== null && recMinutes >= s1Start && deadMinutes <= s1End;
-    const isInShift2 = s2Start !== null && s2End !== null && recMinutes >= s2Start && deadMinutes <= s2End;
-
-    // If both shifts configured, check if time falls in either
-    if (s1Start !== null && s2Start !== null) {
-      return !isInShift1 && !isInShift2;
-    }
-    // If only shift 1 configured
-    if (s1Start !== null) {
-      return !isInShift1;
-    }
-
-    return false; // No shifts configured = no warning
+    return !isInAnyShift;
   }, [shiftConfigData?.data, formData.recurrence_time, formData.deadline_time, formData.dealership_id]);
 
   if (!isOpen) return null;

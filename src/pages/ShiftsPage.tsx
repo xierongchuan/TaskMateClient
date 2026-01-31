@@ -284,6 +284,7 @@ export const ShiftsPage: React.FC = () => {
                           </div>
                         </div>
                         <div className="text-xs text-gray-500 dark:text-gray-400">
+                          {shift.schedule?.name && <span className="font-medium text-gray-600 dark:text-gray-300 mr-1.5">{shift.schedule.name}</span>}
                           Начало: {formatDateTime(shift.shift_start)}
                         </div>
                         {shift.is_late && (

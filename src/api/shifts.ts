@@ -76,13 +76,6 @@ export const shiftsApi = {
     formData.append('dealership_id', data.dealership_id.toString());
     formData.append('opening_photo', data.opening_photo);
 
-    if (data.replacement_user_id) {
-      formData.append('replacement_user_id', data.replacement_user_id.toString());
-    }
-    if (data.replacement_reason) {
-      formData.append('replacement_reason', data.replacement_reason);
-    }
-
     const response = await apiClient.post<{ data: Shift }>('/shifts', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',

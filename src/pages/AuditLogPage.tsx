@@ -170,6 +170,7 @@ export const AuditLogPage: React.FC = () => {
   const [dealershipFilter, setDealershipFilter] = useState<string>('');
   const [fromDate, setFromDate] = useState<string>('');
   const [toDate, setToDate] = useState<string>('');
+  const [logIdSearch, setLogIdSearch] = useState<string>('');
   const [recordIdSearch, setRecordIdSearch] = useState<string>('');
   const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
@@ -192,8 +193,9 @@ export const AuditLogPage: React.FC = () => {
 
   // Запрос логов аудита
   const { data: logsData, isLoading, error, refetch } = useQuery({
-    queryKey: ['audit-logs', page, tableFilter, actionFilter, actorFilter, dealershipFilter, fromDate, toDate, recordIdSearch],
+    queryKey: ['audit-logs', page, logIdSearch, tableFilter, actionFilter, actorFilter, dealershipFilter, fromDate, toDate, recordIdSearch],
     queryFn: () => auditLogsApi.getAuditLogs({
+      log_id: logIdSearch ? Number(logIdSearch) : undefined,
       table_name: tableFilter || undefined,
       action: actionFilter || undefined,
       actor_id: actorFilter ? Number(actorFilter) : undefined,
@@ -266,9 +268,10 @@ export const AuditLogPage: React.FC = () => {
   }, [actorsData]);
 
   // Проверка активности фильтров
-  const hasActiveFilters = tableFilter || actionFilter || actorFilter || dealershipFilter || fromDate || toDate || recordIdSearch;
+  const hasActiveFilters = logIdSearch || tableFilter || actionFilter || actorFilter || dealershipFilter || fromDate || toDate || recordIdSearch;
 
   const handleResetFilters = () => {
+    setLogIdSearch('');
     setTableFilter('');
     setActionFilter('');
     setActorFilter('');
@@ -348,7 +351,18 @@ export const AuditLogPage: React.FC = () => {
           </div>
 
           {/* Вторая строка фильтров */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            <Input
+              type="number"
+              label="ID Журнала"
+              placeholder="Поиск по ID"
+              value={logIdSearch}
+              onChange={(e) => {
+                setLogIdSearch(e.target.value);
+                setPage(1);
+              }}
+              icon={<HashtagIcon />}
+            />
             <Input
               type="date"
               label="Дата от"

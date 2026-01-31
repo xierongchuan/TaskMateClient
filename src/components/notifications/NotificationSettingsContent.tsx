@@ -164,7 +164,7 @@ export const NotificationSettingsContent: React.FC<NotificationSettingsContentPr
   );
 
   const managerNotifications = settings.filter(s =>
-    ['shift_late', 'shift_replacement'].includes(s.channel_type)
+    ['shift_late'].includes(s.channel_type)
   );
 
   const reports = settings.filter(s =>

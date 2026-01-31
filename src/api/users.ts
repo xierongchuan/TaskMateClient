@@ -58,6 +58,14 @@ export const usersApi = {
     await apiClient.delete(`/users/${id}`);
   },
 
+  getUserStats: async (userId: number, dateFrom?: string, dateTo?: string) => {
+    const params: { date_from?: string; date_to?: string } = {};
+    if (dateFrom) params.date_from = dateFrom;
+    if (dateTo) params.date_to = dateTo;
+    const response = await apiClient.get(`/users/${userId}/stats`, { params });
+    return response.data;
+  },
+
   getDealerships: async (): Promise<PaginatedResponse<any>> => {
     const response = await apiClient.get<PaginatedResponse<any>>('/dealerships');
     return response.data;

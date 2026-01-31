@@ -47,8 +47,6 @@ export interface CreateShiftRequest {
   user_id: number;
   dealership_id: number;
   opening_photo: File;
-  replacement_user_id?: number;
-  replacement_reason?: string;
 }
 
 export interface UpdateShiftRequest {

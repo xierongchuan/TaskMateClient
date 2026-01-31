@@ -30,6 +30,7 @@ export interface AuditLog {
 }
 
 export interface AuditLogsFilters {
+  log_id?: number;
   table_name?: string;
   action?: string;
   actor_id?: number;

@@ -6,6 +6,9 @@ import {
   ClockIcon,
   ChartBarIcon,
   ArrowTopRightOnSquareIcon,
+  ExclamationTriangleIcon,
+  EyeIcon,
+  NoSymbolIcon,
 } from '@heroicons/react/24/outline';
 import { Modal, Button } from '../ui';
 import { DonutChart, DonutChartLegend } from '../ui/DonutChart';
@@ -21,6 +24,18 @@ export interface EmployeePerformance {
   late_shifts: number;
   avg_late_minutes: number;
   performance_score: number;
+  completed_on_time: number;
+  completed_late: number;
+  avg_completion_time_hours: number;
+  pending_review: number;
+  rejected_tasks: number;
+  tasks_by_type: {
+    notification: number;
+    completion: number;
+    completion_with_proof: number;
+  };
+  missed_shifts: number;
+  has_history: boolean;
 }
 
 interface UserStatsModalProps {
@@ -29,6 +44,21 @@ interface UserStatsModalProps {
   employee: EmployeePerformance | null;
   periodLabel?: string;
 }
+
+const formatTime = (hours: number): string => {
+  if (hours === 0) return '—';
+  if (hours < 1) return `${Math.round(hours * 60)} мин`;
+  if (hours < 24) return `${hours} ч`;
+  const days = Math.floor(hours / 24);
+  const remainHours = Math.round(hours % 24);
+  return remainHours > 0 ? `${days} д ${remainHours} ч` : `${days} д`;
+};
+
+const responseTypeLabels: Record<string, string> = {
+  notification: 'Уведомление',
+  completion: 'Выполнение',
+  completion_with_proof: 'С доказательством',
+};
 
 export const UserStatsModal: React.FC<UserStatsModalProps> = ({
   isOpen,
@@ -41,7 +71,6 @@ export const UserStatsModal: React.FC<UserStatsModalProps> = ({
   if (!employee) return null;
 
   const totalTasks = employee.total_tasks;
-  const completionRate = employee.completion_rate;
 
   const getPerformanceColor = (score: number) => {
     if (score >= 95) return 'text-green-600 dark:text-green-400';
@@ -62,11 +91,18 @@ export const UserStatsModal: React.FC<UserStatsModalProps> = ({
 
   const stats = [
     {
-      label: 'Выполнено',
-      value: `${employee.completed_tasks} / ${employee.total_tasks}`,
+      label: 'Вовремя',
+      value: employee.completed_on_time,
       icon: CheckCircleIcon,
       color: 'text-green-600 dark:text-green-400',
       bg: 'bg-green-50 dark:bg-green-900/20',
+    },
+    {
+      label: 'С опозданием',
+      value: employee.completed_late,
+      icon: ClockIcon,
+      color: 'text-yellow-600 dark:text-yellow-400',
+      bg: 'bg-yellow-50 dark:bg-yellow-900/20',
     },
     {
       label: 'Просрочено',
@@ -76,11 +112,39 @@ export const UserStatsModal: React.FC<UserStatsModalProps> = ({
       bg: 'bg-red-50 dark:bg-red-900/20',
     },
     {
+      label: 'На проверке',
+      value: employee.pending_review,
+      icon: EyeIcon,
+      color: 'text-orange-600 dark:text-orange-400',
+      bg: 'bg-orange-50 dark:bg-orange-900/20',
+    },
+    {
+      label: 'Отклонено',
+      value: employee.rejected_tasks,
+      icon: NoSymbolIcon,
+      color: 'text-purple-600 dark:text-purple-400',
+      bg: 'bg-purple-50 dark:bg-purple-900/20',
+    },
+    {
+      label: 'Ср. время',
+      value: formatTime(employee.avg_completion_time_hours),
+      icon: ClockIcon,
+      color: 'text-blue-600 dark:text-blue-400',
+      bg: 'bg-blue-50 dark:bg-blue-900/20',
+    },
+    {
       label: 'Опоздания на смены',
       value: employee.total_shifts > 0 ? `${employee.late_shifts} / ${employee.total_shifts}` : '—',
-      icon: ClockIcon,
+      icon: ExclamationTriangleIcon,
       color: 'text-yellow-600 dark:text-yellow-400',
       bg: 'bg-yellow-50 dark:bg-yellow-900/20',
+    },
+    {
+      label: 'Пропущ. смены',
+      value: employee.missed_shifts,
+      icon: XCircleIcon,
+      color: 'text-red-600 dark:text-red-400',
+      bg: 'bg-red-50 dark:bg-red-900/20',
     },
     {
       label: 'Рейтинг',
@@ -92,9 +156,14 @@ export const UserStatsModal: React.FC<UserStatsModalProps> = ({
   ];
 
   const chartSegments = [
-    { value: employee.completed_tasks, color: '#22c55e', label: 'Выполнено в срок' },
+    { value: employee.completed_on_time, color: '#22c55e', label: 'Вовремя' },
+    { value: employee.completed_late, color: '#eab308', label: 'С опозданием' },
     { value: employee.overdue_tasks, color: '#ef4444', label: 'Просрочено' },
-  ];
+    { value: employee.pending_review, color: '#f97316', label: 'На проверке' },
+    { value: employee.rejected_tasks, color: '#a855f7', label: 'Отклонено' },
+  ].filter(s => s.value > 0);
+
+  const taskTypes = Object.entries(employee.tasks_by_type || {}).filter(([, count]) => count > 0);
 
   return (
     <Modal
@@ -111,19 +180,19 @@ export const UserStatsModal: React.FC<UserStatsModalProps> = ({
           </div>
 
           {/* Stats Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div className="grid grid-cols-3 gap-3">
             {stats.map((stat) => {
               const Icon = stat.icon;
               return (
                 <div
                   key={stat.label}
-                  className={`${stat.bg} rounded-xl p-4 text-center`}
+                  className={`${stat.bg} rounded-xl p-3 text-center`}
                 >
-                  <Icon className={`w-6 h-6 mx-auto mb-2 ${stat.color}`} />
-                  <div className={`text-2xl font-bold ${stat.color}`}>
+                  <Icon className={`w-5 h-5 mx-auto mb-1 ${stat.color}`} />
+                  <div className={`text-xl font-bold ${stat.color}`}>
                     {stat.value}
                   </div>
-                  <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                  <div className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
                     {stat.label}
                   </div>
                 </div>
@@ -135,22 +204,56 @@ export const UserStatsModal: React.FC<UserStatsModalProps> = ({
           <div className="bg-gray-50 dark:bg-gray-700/30 rounded-xl p-4">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Выполнение в срок
+                Процент выполнения
               </span>
-              <span className={`text-lg font-bold ${completionRate >= 80 ? 'text-green-600' : completionRate >= 60 ? 'text-yellow-600' : 'text-red-600'}`}>
-                {completionRate}%
+              <span className={`text-lg font-bold ${employee.completion_rate >= 80 ? 'text-green-600' : employee.completion_rate >= 60 ? 'text-yellow-600' : 'text-red-600'}`}>
+                {employee.completion_rate}%
               </span>
             </div>
             <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-3">
               <div
-                className={`h-3 rounded-full transition-all duration-500 ${completionRate >= 80 ? 'bg-green-500' : completionRate >= 60 ? 'bg-yellow-500' : 'bg-red-500'}`}
-                style={{ width: `${completionRate}%` }}
+                className={`h-3 rounded-full transition-all duration-500 ${employee.completion_rate >= 80 ? 'bg-green-500' : employee.completion_rate >= 60 ? 'bg-yellow-500' : 'bg-red-500'}`}
+                style={{ width: `${employee.completion_rate}%` }}
               />
             </div>
           </div>
 
+          {/* Tasks by Type */}
+          {taskTypes.length > 0 && (
+            <div className="bg-gray-50 dark:bg-gray-700/30 rounded-xl p-4">
+              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                По типам задач
+              </h4>
+              <div className="flex flex-wrap gap-2">
+                {taskTypes.map(([type, count]) => (
+                  <span
+                    key={type}
+                    className="inline-flex items-center px-3 py-1.5 rounded-lg bg-white dark:bg-gray-600 text-sm text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-500"
+                  >
+                    {responseTypeLabels[type] || type}
+                    <span className="ml-2 font-semibold text-accent-600 dark:text-accent-400">{count}</span>
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Avg late minutes */}
+          {employee.late_shifts > 0 && (
+            <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-xl p-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-yellow-700 dark:text-yellow-300">
+                  Среднее опоздание на смену
+                </span>
+                <span className="text-lg font-bold text-yellow-600 dark:text-yellow-400">
+                  {employee.avg_late_minutes} мин
+                </span>
+              </div>
+            </div>
+          )}
+
           {/* Chart */}
-          {totalTasks > 0 && (
+          {totalTasks > 0 && chartSegments.length > 0 && (
             <div className="flex flex-col sm:flex-row items-center justify-around gap-6 py-4">
               <DonutChart
                 size={160}

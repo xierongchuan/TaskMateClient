@@ -10,7 +10,6 @@ export interface ReportData {
     overdue_tasks: number;
     total_shifts: number;
     late_shifts: number;
-    total_replacements: number;
   };
   tasks_by_status: Array<{
     status: string;
@@ -28,6 +27,18 @@ export interface ReportData {
     late_shifts: number;
     avg_late_minutes: number;
     performance_score: number;
+    completed_on_time: number;
+    completed_late: number;
+    avg_completion_time_hours: number;
+    pending_review: number;
+    rejected_tasks: number;
+    tasks_by_type: {
+      notification: number;
+      completion: number;
+      completion_with_proof: number;
+    };
+    missed_shifts: number;
+    has_history: boolean;
   }>;
   daily_stats: Array<{
     date: string;

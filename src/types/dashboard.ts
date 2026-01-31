@@ -26,10 +26,6 @@ export interface DashboardData {
       id: number;
       name: string;
     };
-    replacement?: {
-      id: number;
-      full_name: string;
-    };
     status: string;
     opened_at: string;
     closed_at: string | null;

@@ -30,6 +30,7 @@ import {
 import { useToast } from '../components/ui/Toast';
 
 // Icons
+import { ClickableTitle } from '../components/common';
 import {
   PlusIcon,
   CalendarIcon,
@@ -369,9 +370,9 @@ export const TaskGeneratorsPage: React.FC = () => {
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1 min-w-0">
                         <div className="flex flex-wrap items-center gap-2 mb-2">
-                          <h3 className="text-lg font-semibold text-gray-900 dark:text-white truncate">
+                          <ClickableTitle onClick={() => setDetailsGenerator(generator)}>
                             {generator.title}
-                          </h3>
+                          </ClickableTitle>
                           {getStatusBadge(generator.is_active)}
                           {getRecurrenceBadge(generator.recurrence)}
                         </div>
@@ -489,9 +490,9 @@ export const TaskGeneratorsPage: React.FC = () => {
                   <Card.Body className="flex flex-col h-full">
                     <div className="flex justify-between items-start mb-4">
                       <div className="min-w-0 flex-1">
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white line-clamp-1" title={generator.title}>
+                        <ClickableTitle onClick={() => setDetailsGenerator(generator)}>
                           {generator.title}
-                        </h3>
+                        </ClickableTitle>
                         <div className="flex flex-wrap items-center mt-1 gap-2">
                           {getStatusBadge(generator.is_active)}
                           <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">

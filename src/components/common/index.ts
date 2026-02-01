@@ -19,3 +19,5 @@ export type { ArchiveReason } from './ArchiveReasonBadge';
 
 export { ActionButtons } from './ActionButtons';
 export type { ActionButtonsProps } from './ActionButtons';
+
+export { ClickableTitle } from './ClickableTitle';

@@ -46,7 +46,7 @@ import {
   Modal,
   useToast,
 } from '../components/ui';
-import { StatusBadge, PriorityBadge, ActionButtons } from '../components/common';
+import { StatusBadge, PriorityBadge, ActionButtons, ClickableTitle } from '../components/common';
 
 export const TasksPage: React.FC = () => {
   const permissions = usePermissions();
@@ -676,12 +676,9 @@ export const TasksPage: React.FC = () => {
                     <div className="flex items-start justify-between">
                       <div className="flex-1 min-w-0 pr-4">
                         <div className="flex items-center gap-3 mb-2 flex-wrap">
-                          <h3
-                            className="text-lg font-semibold text-gray-900 dark:text-white truncate cursor-pointer hover:text-accent-600 dark:hover:text-accent-400 transition-colors"
-                            onClick={() => handleView(task)}
-                          >
+                          <ClickableTitle onClick={() => handleView(task)}>
                             {task.title}
-                          </h3>
+                          </ClickableTitle>
                           <PriorityBadge priority={task.priority || 'medium'} />
                           <StatusBadge status={task.status} type="task" />
                         </div>
@@ -782,12 +779,9 @@ export const TasksPage: React.FC = () => {
               {tasksData?.data.map((task) => (
                 <div key={task.id} className={`p-6 ${getTaskCardClass(task)}`}>
                   <div className="flex items-start justify-between mb-3">
-                    <h3
-                      className="text-lg font-semibold text-gray-900 dark:text-white truncate pr-2 cursor-pointer hover:text-accent-600 dark:hover:text-accent-400 transition-colors"
-                      onClick={() => handleView(task)}
-                    >
+                    <ClickableTitle onClick={() => handleView(task)}>
                       {task.title}
-                    </h3>
+                    </ClickableTitle>
                     <PriorityBadge priority={task.priority || 'medium'} />
                   </div>
 

@@ -28,7 +28,7 @@ import {
   StatCard,
 } from '../components/ui';
 import { useToast } from '../components/ui/Toast';
-import { PriorityBadge, ArchiveReasonBadge, GeneratorSelector } from '../components/common';
+import { PriorityBadge, ArchiveReasonBadge, GeneratorSelector, ClickableTitle } from '../components/common';
 import { ArchivedTaskDetailsModal } from '../components/tasks/ArchivedTaskDetailsModal';
 
 // Icons
@@ -442,12 +442,9 @@ export const ArchivedTasksPage: React.FC = () => {
                     <div className="flex items-start justify-between">
                       <div className="flex-1 min-w-0 pr-4">
                         <div className="flex items-center gap-3 mb-2 flex-wrap">
-                          <h3
-                            className="text-lg font-semibold text-gray-900 dark:text-white truncate cursor-pointer hover:text-accent-600 dark:hover:text-accent-400 transition-colors"
-                            onClick={() => handleViewDetails(task)}
-                          >
+                          <ClickableTitle onClick={() => handleViewDetails(task)}>
                             {task.title}
-                          </h3>
+                          </ClickableTitle>
                           <PriorityBadge priority={task.priority || 'medium'} />
                           <ArchiveReasonBadge reason={task.archive_reason} />
                         </div>
@@ -539,12 +536,9 @@ export const ArchivedTasksPage: React.FC = () => {
                 }`}>
                   <Card.Body>
                     <div className="flex justify-between items-start mb-3 gap-2">
-                      <h3
-                        className="text-sm font-medium text-gray-900 dark:text-white line-clamp-2 cursor-pointer hover:text-accent-600 dark:hover:text-accent-400 transition-colors"
-                        onClick={() => handleViewDetails(task)}
-                      >
+                      <ClickableTitle onClick={() => handleViewDetails(task)}>
                         {task.title}
-                      </h3>
+                      </ClickableTitle>
                       <PriorityBadge priority={task.priority || 'medium'} />
                     </div>
 

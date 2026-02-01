@@ -33,7 +33,7 @@ import {
   Alert,
   useToast,
 } from '../components/ui';
-import { StatusBadge, PriorityBadge } from '../components/common';
+import { StatusBadge, PriorityBadge, ClickableTitle } from '../components/common';
 
 export const PendingReviewPage: React.FC = () => {
   const permissions = usePermissions();
@@ -252,12 +252,9 @@ export const PendingReviewPage: React.FC = () => {
                       {/* Информация о задаче */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-3 mb-2 flex-wrap">
-                          <h3
-                            className="text-lg font-semibold text-gray-900 dark:text-white cursor-pointer hover:text-accent-600 dark:hover:text-accent-400 transition-colors"
-                            onClick={() => handleViewDetails(task)}
-                          >
+                          <ClickableTitle onClick={() => handleViewDetails(task)}>
                             {task.title}
-                          </h3>
+                          </ClickableTitle>
                           <PriorityBadge priority={task.priority || 'medium'} />
                           <StatusBadge status="pending_review" type="task" />
                         </div>

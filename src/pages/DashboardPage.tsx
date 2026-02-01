@@ -35,7 +35,7 @@ import {
   Section,
   PageHeader,
 } from '../components/ui';
-import { StatusBadge } from '../components/common';
+import { StatusBadge, ClickableTitle } from '../components/common';
 
 export const DashboardPage: React.FC = () => {
   const { user } = useAuth();
@@ -380,7 +380,9 @@ export const DashboardPage: React.FC = () => {
                   }`}
                 >
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-gray-900 dark:text-white text-sm truncate">{task.title}</p>
+                    <ClickableTitle onClick={() => handleOpenTask(task)}>
+                      {task.title}
+                    </ClickableTitle>
                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                       {task.deadline ? formatDateTime(task.deadline) : formatTime(task.created_at)}
                     </p>
@@ -413,9 +415,9 @@ export const DashboardPage: React.FC = () => {
                         <div className="flex items-start">
                           <XCircleIcon className="w-5 h-5 text-red-500 mr-2 mt-0.5 flex-shrink-0" />
                           <div className="flex-1 min-w-0">
-                            <p className="font-medium text-red-900 dark:text-red-200 text-sm">
+                            <ClickableTitle onClick={() => handleOpenTask(task)}>
                               {task.title}
-                            </p>
+                            </ClickableTitle>
                             <div className="flex items-center text-xs text-red-700 mt-1">
                               <span>Просрочено: {task.deadline ? formatDateTime(task.deadline) : 'Без срока'}</span>
                               <span className="mx-1">•</span>
@@ -495,7 +497,9 @@ export const DashboardPage: React.FC = () => {
                   <div onClick={() => handleOpenTask(task)} className="p-3">
                     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium text-gray-900 dark:text-white text-sm truncate">{task.title}</p>
+                        <ClickableTitle onClick={() => handleOpenTask(task)}>
+                          {task.title}
+                        </ClickableTitle>
                         <div className="flex flex-wrap items-center gap-2 text-xs text-gray-600 dark:text-gray-400 mt-1">
                           {task.assignments && task.assignments.length > 0 && (
                             <span>

@@ -11,9 +11,11 @@ import {
   ArrowDownTrayIcon
 } from '@heroicons/react/24/outline';
 import { reportsApi } from '../api/reports';
-import { UserStatsModal, type EmployeePerformance } from '../components/reports/UserStatsModal';
+import { usersApi } from '../api/users';
+import { UserDetailsModal } from '../components/users/UserDetailsModal';
 import { IssueDetailsModal } from '../components/reports/IssueDetailsModal';
 import { useWorkspace } from '../hooks/useWorkspace';
+import type { User } from '../types/user';
 
 // Унифицированные компоненты
 import {
@@ -31,7 +33,7 @@ import {
 export const ReportsPage: React.FC = () => {
   const { dealershipId: workspaceDealershipId } = useWorkspace();
   const [selectedPeriod, setSelectedPeriod] = useState<'week' | 'month' | 'custom'>('week');
-  const [selectedEmployee, setSelectedEmployee] = useState<EmployeePerformance | null>(null);
+  const [selectedEmployee, setSelectedEmployee] = useState<User | null>(null);
   const [selectedIssue, setSelectedIssue] = useState<{ type: string; description: string } | null>(null);
   const [dateRange, setDateRange] = useState(getCurrentWeekRange);
   const [reportFormat, setReportFormat] = useState<'json' | 'pdf'>('json');
@@ -332,7 +334,12 @@ export const ReportsPage: React.FC = () => {
                   {reportData.employees_performance.map((employee, index) => (
                     <tr
                       key={employee.employee_id}
-                      onClick={() => setSelectedEmployee(employee)}
+                      onClick={async () => {
+                        try {
+                          const user = await usersApi.getUser(employee.employee_id);
+                          setSelectedEmployee(user);
+                        } catch { /* ignore */ }
+                      }}
                       className="hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer transition-colors"
                     >
                       {/* Номер в рейтинге */}
@@ -458,11 +465,10 @@ export const ReportsPage: React.FC = () => {
         />
       )}
 
-      <UserStatsModal
+      <UserDetailsModal
         isOpen={!!selectedEmployee}
         onClose={() => setSelectedEmployee(null)}
-        employee={selectedEmployee}
-        periodLabel={`с ${dateRange.from} по ${dateRange.to}`}
+        user={selectedEmployee}
       />
 
       <IssueDetailsModal
@@ -473,10 +479,12 @@ export const ReportsPage: React.FC = () => {
         dateFrom={dateRange.from}
         dateTo={dateRange.to}
         dealershipId={workspaceDealershipId}
-        onSelectEmployee={(employeeId) => {
+        onSelectEmployee={async (employeeId) => {
           setSelectedIssue(null);
-          const emp = reportData?.employees_performance?.find((e: EmployeePerformance) => e.employee_id === employeeId);
-          if (emp) setSelectedEmployee(emp);
+          try {
+            const user = await usersApi.getUser(employeeId);
+            setSelectedEmployee(user);
+          } catch { /* ignore */ }
         }}
       />
     </PageContainer>

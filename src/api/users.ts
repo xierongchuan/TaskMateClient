@@ -40,8 +40,8 @@ export const usersApi = {
   },
 
   getUser: async (id: number): Promise<User> => {
-    const response = await apiClient.get<User>(`/users/${id}`);
-    return response.data;
+    const response = await apiClient.get<{ data: User }>(`/users/${id}`);
+    return response.data.data;
   },
 
   createUser: async (data: CreateUserRequest): Promise<{ data: User }> => {

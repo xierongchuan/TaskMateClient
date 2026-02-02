@@ -45,6 +45,13 @@ export interface DashboardData {
       start_time: string;
       end_time: string;
     }>;
+    current_or_next_schedule?: {
+      id: number;
+      name: string;
+      start_time: string;
+      end_time: string;
+      is_current: boolean;
+    } | null;
     is_today_holiday?: boolean;
   }>;
   today_tasks_list?: Task[];

@@ -11,8 +11,6 @@ import type { ShiftsFilters, Shift } from '../types/shift';
 import {
   BriefcaseIcon,
   ClockIcon,
-  SunIcon,
-  StarIcon,
   ListBulletIcon,
   Squares2X2Icon,
   ChevronDownIcon,
@@ -127,7 +125,7 @@ export const ShiftsPage: React.FC = () => {
     return Array.from(grouped.values());
   }, [currentShifts]);
 
-  const hasActiveFilters = !!(filters.status || filters.shift_type || filters.is_late !== undefined || dealershipFilter || employeeFilter);
+  const hasActiveFilters = !!(filters.status || filters.is_late !== undefined || dealershipFilter || employeeFilter);
 
   const clearFilters = () => {
     setFilters({ status: '', is_late: undefined });
@@ -152,21 +150,6 @@ export const ShiftsPage: React.FC = () => {
     return (
       <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${cls}`}>
         {label}
-      </span>
-    );
-  };
-
-  const getShiftTypeBadge = (type: string) => {
-    const config: Record<string, { cls: string; icon: React.ReactNode; label: string }> = {
-      regular: { cls: 'bg-accent-100 text-accent-800 dark:bg-gray-700 dark:text-accent-300', icon: <BriefcaseIcon className="w-3 h-3 mr-1" />, label: 'Обычная' },
-      overtime: { cls: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300', icon: <ClockIcon className="w-3 h-3 mr-1" />, label: 'Сверхурочная' },
-      weekend: { cls: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300', icon: <SunIcon className="w-3 h-3 mr-1" />, label: 'Выходная' },
-      holiday: { cls: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300', icon: <StarIcon className="w-3 h-3 mr-1" />, label: 'Праздничная' },
-    };
-    const c = config[type] || { cls: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300', icon: null, label: type };
-    return (
-      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${c.cls}`}>
-        {c.icon}{c.label}
       </span>
     );
   };
@@ -296,10 +279,12 @@ export const ShiftsPage: React.FC = () => {
                       {/* Раскрытие — детали */}
                       {expandedShiftId === shift.id && (
                         <div className="px-3 pb-3 pt-2 border-t border-gray-200 dark:border-gray-600 space-y-1.5 text-xs text-gray-500 dark:text-gray-400">
-                          <div className="flex items-center gap-1.5">
-                            <span>Тип:</span>
-                            {getShiftTypeBadge(shift.shift_type)}
-                          </div>
+                          {shift.schedule && (
+                            <div className="flex items-center gap-1.5">
+                              <span>Расписание:</span>
+                              <span>{shift.schedule.name}</span>
+                            </div>
+                          )}
                           {shift.break_duration && (
                             <div>Перерыв: {shift.break_duration} мин</div>
                           )}
@@ -343,20 +328,6 @@ export const ShiftsPage: React.FC = () => {
               <option value="">Все</option>
               <option value="open">Открыта</option>
               <option value="closed">Закрыта</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Тип смены</label>
-            <select
-              value={filters.shift_type || ''}
-              onChange={(e) => { setFilters({ ...filters, shift_type: e.target.value || undefined }); setPage(1); }}
-              className={selectClass}
-            >
-              <option value="">Все</option>
-              <option value="regular">Обычная</option>
-              <option value="overtime">Сверхурочная</option>
-              <option value="weekend">Выходная</option>
-              <option value="holiday">Праздничная</option>
             </select>
           </div>
           <div>
@@ -450,10 +421,7 @@ export const ShiftsPage: React.FC = () => {
                               {shift.shift_end && <span>Конец: {formatDateTime(shift.shift_end)}</span>}
                             </div>
                             <div className="flex flex-wrap gap-x-3 items-center">
-                              <div className="flex items-center gap-1">
-                                <span>Тип:</span>
-                                {getShiftTypeBadge(shift.shift_type)}
-                              </div>
+                              {shift.schedule && <span>Расписание: {shift.schedule.name}</span>}
                               {shift.break_duration && <span>Перерыв: {shift.break_duration} мин</span>}
                               {shift.dealership && <span>Автосалон: {shift.dealership.name}</span>}
                             </div>
@@ -487,10 +455,12 @@ export const ShiftsPage: React.FC = () => {
                       <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1.5">
                         <div>Начало: {formatDateTime(shift.shift_start)}</div>
                         {shift.shift_end && <div>Конец: {formatDateTime(shift.shift_end)}</div>}
-                        <div className="flex items-center gap-1">
-                          <span>Тип:</span>
-                          {getShiftTypeBadge(shift.shift_type)}
-                        </div>
+                        {shift.schedule && (
+                          <div className="flex items-center gap-1">
+                            <span>Расписание:</span>
+                            <span>{shift.schedule.name}</span>
+                          </div>
+                        )}
                         {shift.is_late && (
                           <div className="text-red-600 dark:text-red-400 font-medium">
                             Опоздание: {shift.late_minutes} мин

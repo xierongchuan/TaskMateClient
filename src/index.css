@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Viewport & Safe Area */
+:root {
+  --viewport-height: 100dvh;
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+}
+
 /* Accent Color System - CSS Variables */
 :root {
   /* Default: Blue */

@@ -9,8 +9,10 @@ import { WorkspaceSwitcher } from './WorkspaceSwitcher';
 import { formatTime } from '../../utils/dateTime';
 import { ClockIcon, Bars3Icon } from '@heroicons/react/24/outline';
 import { APP_NAME } from '../../constants/app';
+import { useViewportHeight } from '../../hooks/useViewportHeight';
 
 export const Layout: React.FC = () => {
+  useViewportHeight();
   const { user } = useAuth();
   const { dealershipId } = useWorkspace();
   const navigate = useNavigate();
@@ -34,7 +36,7 @@ export const Layout: React.FC = () => {
   const showLogoInHeader = (isMobile && !sidebarOpen) || (!isMobile && mode === 'mini');
 
   return (
-    <div className="h-screen bg-gray-100 dark:bg-gray-900 flex overflow-hidden transition-colors duration-200 print:h-auto print:overflow-visible">
+    <div className="bg-gray-100 dark:bg-gray-900 flex overflow-hidden transition-colors duration-200 print:h-auto print:overflow-visible" style={{ height: 'var(--viewport-height)' }}>
       {/* Sidebar */}
       <div className="print:hidden">
         <Sidebar />

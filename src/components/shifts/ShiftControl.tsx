@@ -4,7 +4,8 @@ import { useAuth } from '../../hooks/useAuth';
 import { usePermissions } from '../../hooks/usePermissions';
 import { CameraIcon, PlayIcon, StopIcon } from '@heroicons/react/24/outline';
 import { DealershipSelector } from '../common/DealershipSelector';
-import { useToast } from '../ui';
+import { useToast, ConfirmDialog } from '../ui';
+import { useConfirmDialog } from '../../hooks/useConfirmDialog';
 import { ShiftPhotoViewer } from './ShiftPhotoViewer';
 import { formatDateTime } from '../../utils/dateTime';
 import type { CreateShiftRequest, UpdateShiftRequest } from '../../types/shift';
@@ -26,6 +27,7 @@ export const ShiftControl: React.FC = () => {
   const updateShiftMutation = useUpdateShift();
 
   const { showToast } = useToast();
+  const { showConfirm, confirmState, handleConfirm, handleCancel } = useConfirmDialog();
   const [openingPhoto, setOpeningPhoto] = useState<File | null>(null);
   const [closingPhoto, setClosingPhoto] = useState<File | null>(null);
 
@@ -55,6 +57,16 @@ export const ShiftControl: React.FC = () => {
 
   const handleCloseShift = async () => {
     if (!currentShift) return;
+
+    const confirmed = await showConfirm({
+      title: 'Закрыть смену?',
+      message: 'Вы уверены, что хотите закрыть текущую смену?',
+      confirmText: 'Закрыть смену',
+      cancelText: 'Отмена',
+      variant: 'warning',
+    });
+
+    if (!confirmed) return;
 
     const updateData: UpdateShiftRequest = {
       status: 'closed',
@@ -86,6 +98,7 @@ export const ShiftControl: React.FC = () => {
   const isShiftOpen = currentShift?.status && currentShift.status !== 'closed';
 
   return (
+    <>
     <div className="bg-white dark:bg-gray-800 shadow rounded-lg mb-6 border border-gray-200 dark:border-gray-700 overflow-hidden">
       {/* Заголовок с статусом */}
       <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
@@ -262,5 +275,16 @@ export const ShiftControl: React.FC = () => {
         </div>
       </div>
     </div>
+    <ConfirmDialog
+      isOpen={confirmState.isOpen}
+      title={confirmState.title}
+      message={confirmState.message}
+      confirmText={confirmState.confirmText}
+      cancelText={confirmState.cancelText}
+      variant={confirmState.variant}
+      onConfirm={handleConfirm}
+      onCancel={handleCancel}
+    />
+    </>
   );
 };

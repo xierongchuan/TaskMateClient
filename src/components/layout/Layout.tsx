@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Outlet, Link } from 'react-router-dom';
+import { Outlet, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { useMyCurrentShift } from '../../hooks/useShifts';
 import { useWorkspace } from '../../hooks/useWorkspace';
@@ -13,6 +13,7 @@ import { APP_NAME } from '../../constants/app';
 export const Layout: React.FC = () => {
   const { user } = useAuth();
   const { dealershipId } = useWorkspace();
+  const navigate = useNavigate();
   const { isOpen: sidebarOpen, mode, toggleSidebar } = useSidebarStore();
   const { data: currentShiftData } = useMyCurrentShift(dealershipId ?? undefined);
   const currentShift = currentShiftData?.data;
@@ -73,15 +74,23 @@ export const Layout: React.FC = () => {
           {/* Right side: shift info + user */}
           <div className="flex items-center space-x-2 sm:space-x-4 shrink-0">
             {currentShift && (
-              <div className="hidden sm:flex items-center space-x-2 px-3 py-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-                <ClockIcon className="w-4 h-4 text-green-600 dark:text-green-400" />
+              <button
+                onClick={() => navigate('/shifts')}
+                className="flex items-center space-x-2 px-2 sm:px-3 py-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors cursor-pointer"
+                title="Перейти к управлению сменой"
+              >
+                <span className="relative flex h-2 w-2 sm:hidden flex-shrink-0">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                </span>
+                <ClockIcon className="w-4 h-4 text-green-600 dark:text-green-400 hidden sm:block" />
                 <div className="text-xs text-green-800 dark:text-green-300">
-                  <div className="font-medium">Смена открыта</div>
+                  <div className="font-medium hidden sm:block">Смена открыта</div>
                   <div className="text-green-600 dark:text-green-400">
                     с {formatTime(currentShift.shift_start)}
                   </div>
                 </div>
-              </div>
+              </button>
             )}
 
             <Link to="/profile" className="flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 p-2 rounded-lg transition-colors">

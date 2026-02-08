@@ -35,6 +35,7 @@ import {
 import { Select } from '../components/ui/Select';
 import type { SelectOptionGroup } from '../components/ui/Select';
 import { ShiftPhotoViewer } from '../components/shifts/ShiftPhotoViewer';
+import { ShiftControl } from '../components/shifts/ShiftControl';
 
 export const ShiftsPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -50,6 +51,8 @@ export const ShiftsPage: React.FC = () => {
   const [expandedShiftId, setExpandedShiftId] = useState<number | null>(null);
   const [dealershipFilter, setDealershipFilter] = useState<string>('');
   const [employeeFilter, setEmployeeFilter] = useState<string>(searchParams.get('user_id') || '');
+  const [dateFrom, setDateFrom] = useState<string>('');
+  const [dateTo, setDateTo] = useState<string>('');
 
   // Эффективный dealership_id: из навбара или из фильтра
   const effectiveDealershipId = workspaceDealershipId ?? (dealershipFilter ? Number(dealershipFilter) : undefined);
@@ -101,6 +104,8 @@ export const ShiftsPage: React.FC = () => {
     page,
     ...(effectiveDealershipId ? { dealership_id: effectiveDealershipId } : {}),
     ...(employeeFilter ? { user_id: Number(employeeFilter) } : {}),
+    ...(dateFrom ? { date_from: dateFrom } : {}),
+    ...(dateTo ? { date_to: dateTo } : {}),
   };
 
   const { data: shiftsData, isLoading, error } = useShifts(shiftsQueryFilters);
@@ -125,12 +130,14 @@ export const ShiftsPage: React.FC = () => {
     return Array.from(grouped.values());
   }, [currentShifts]);
 
-  const hasActiveFilters = !!(filters.status || filters.is_late !== undefined || dealershipFilter || employeeFilter);
+  const hasActiveFilters = !!(filters.status || filters.is_late !== undefined || dealershipFilter || employeeFilter || dateFrom || dateTo);
 
   const clearFilters = () => {
     setFilters({ status: '', is_late: undefined });
     setDealershipFilter('');
     setEmployeeFilter('');
+    setDateFrom('');
+    setDateTo('');
     setPage(1);
   };
 
@@ -158,7 +165,18 @@ export const ShiftsPage: React.FC = () => {
     setExpandedShiftId(prev => prev === id ? null : id);
   };
 
+  const formatDuration = (start: string, end: string): string => {
+    const diffMs = new Date(end).getTime() - new Date(start).getTime();
+    if (diffMs <= 0) return '—';
+    const totalMinutes = Math.floor(diffMs / 60000);
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    if (hours === 0) return `${minutes}м`;
+    return minutes > 0 ? `${hours}ч ${minutes}м` : `${hours}ч`;
+  };
+
   const selectClass = "unified-input block w-full rounded-xl border-gray-200 dark:border-gray-600 shadow-sm focus:outline-none focus:border-accent-500 sm:text-sm px-3 py-2 border bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all duration-200";
+  const inputClass = selectClass;
 
   return (
     <PageContainer>
@@ -177,6 +195,9 @@ export const ShiftsPage: React.FC = () => {
           />
         )}
       </PageHeader>
+
+      {/* 0. Управление сменой */}
+      <ShiftControl />
 
       {/* 1. Статистика */}
       {isStatisticsLoading || isCurrentShiftsLoading ? (
@@ -317,7 +338,7 @@ export const ShiftsPage: React.FC = () => {
         onClear={hasActiveFilters ? clearFilters : undefined}
         className="mb-6"
       >
-        <FilterPanel.Grid columns={!workspaceDealershipId ? 5 : 4}>
+        <FilterPanel.Grid>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Статус</label>
             <select
@@ -372,6 +393,24 @@ export const ShiftsPage: React.FC = () => {
               placeholder="Все сотрудники"
             />
           </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Дата от</label>
+            <input
+              type="date"
+              value={dateFrom}
+              onChange={(e) => { setDateFrom(e.target.value); setPage(1); }}
+              className={inputClass}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Дата до</label>
+            <input
+              type="date"
+              value={dateTo}
+              onChange={(e) => { setDateTo(e.target.value); setPage(1); }}
+              className={inputClass}
+            />
+          </div>
         </FilterPanel.Grid>
       </FilterPanel>
 
@@ -419,6 +458,11 @@ export const ShiftsPage: React.FC = () => {
                             <div className="flex flex-wrap gap-x-4">
                               <span>Начало: {formatDateTime(shift.shift_start)}</span>
                               {shift.shift_end && <span>Конец: {formatDateTime(shift.shift_end)}</span>}
+                              {shift.shift_end && (
+                                <span className="font-medium text-gray-700 dark:text-gray-300">
+                                  {formatDuration(shift.shift_start, shift.shift_end)}
+                                </span>
+                              )}
                             </div>
                             <div className="flex flex-wrap gap-x-3 items-center">
                               {shift.schedule && <span>Расписание: {shift.schedule.name}</span>}
@@ -455,6 +499,11 @@ export const ShiftsPage: React.FC = () => {
                       <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1.5">
                         <div>Начало: {formatDateTime(shift.shift_start)}</div>
                         {shift.shift_end && <div>Конец: {formatDateTime(shift.shift_end)}</div>}
+                        {shift.shift_end && (
+                          <div className="font-medium text-gray-700 dark:text-gray-300">
+                            Длительность: {formatDuration(shift.shift_start, shift.shift_end)}
+                          </div>
+                        )}
                         {shift.schedule && (
                           <div className="flex items-center gap-1">
                             <span>Расписание:</span>

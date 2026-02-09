@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { User } from '../types/user';
+import { createZustandStorage } from '../platform/storage/zustand';
 
 interface WorkspaceState {
   selectedDealershipId: number | null;
@@ -109,6 +110,7 @@ export const useWorkspaceStore = create<WorkspaceState>()(
     }),
     {
       name: 'workspace-storage',
+      storage: createZustandStorage(),
       partialize: (state) => ({
         selectedDealershipId: state.selectedDealershipId,
         hasInitialized: state.hasInitialized,

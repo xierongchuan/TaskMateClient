@@ -1,7 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import Cookies from 'js-cookie';
-import { Capacitor } from '@capacitor/core';
-import { StatusBar, Style } from '@capacitor/status-bar';
+import { getPlatformStorage, getStatusBarAdapter } from '../platform';
 
 export type Theme = 'light' | 'dark' | 'system';
 export type AccentColor = 'blue' | 'green' | 'purple' | 'orange' | 'teal';
@@ -28,27 +26,34 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Initialize from cookie or default to 'system'
-  const [theme, setThemeState] = useState<Theme>(() => {
-    const savedTheme = Cookies.get('theme_preference');
-    return (savedTheme as Theme) || 'system';
-  });
+  const storage = getPlatformStorage();
+  const statusBar = getStatusBarAdapter();
 
-  // Pending theme for settings page (before save)
-  const [pendingTheme, setPendingTheme] = useState<Theme>(theme);
-
+  // Initialize with defaults, then hydrate from storage
+  const [theme, setThemeState] = useState<Theme>('system');
+  const [pendingTheme, setPendingTheme] = useState<Theme>('system');
   const [isDark, setIsDark] = useState(false);
+  const [accentColor, setAccentColorState] = useState<AccentColor>('blue');
+  const [pendingAccentColor, setPendingAccentColor] = useState<AccentColor>('blue');
 
-  // Initialize accent color from cookie or default to 'blue'
-  const [accentColor, setAccentColorState] = useState<AccentColor>(() => {
-    const savedAccent = Cookies.get('accent_color');
-    return VALID_ACCENT_COLORS.includes(savedAccent as AccentColor)
-      ? (savedAccent as AccentColor)
-      : 'blue';
-  });
-
-  // Pending accent color for settings page (before save)
-  const [pendingAccentColor, setPendingAccentColor] = useState<AccentColor>(accentColor);
+  // Hydrate from platform storage
+  useEffect(() => {
+    async function hydrate() {
+      const [savedTheme, savedAccent] = await Promise.all([
+        storage.getItem('theme_preference'),
+        storage.getItem('accent_color'),
+      ]);
+      if (savedTheme && ['light', 'dark', 'system'].includes(savedTheme)) {
+        setThemeState(savedTheme as Theme);
+        setPendingTheme(savedTheme as Theme);
+      }
+      if (savedAccent && VALID_ACCENT_COLORS.includes(savedAccent as AccentColor)) {
+        setAccentColorState(savedAccent as AccentColor);
+        setPendingAccentColor(savedAccent as AccentColor);
+      }
+    }
+    hydrate();
+  }, [storage]);
 
   // Apply theme to DOM based on APPLIED theme (not pending)
   useEffect(() => {
@@ -70,13 +75,14 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   }, [theme]);
 
-  // Синхронизация цвета статус-бара с темой (Capacitor)
+  // Синхронизация цвета статус-бара с темой
   useEffect(() => {
-    if (!Capacitor.isNativePlatform()) return;
-    StatusBar.setOverlaysWebView({ overlay: false });
-    StatusBar.setBackgroundColor({ color: isDark ? '#171717' : '#f5f5f5' });
-    StatusBar.setStyle({ style: isDark ? Style.Dark : Style.Light });
-  }, [isDark]);
+    statusBar.setOverlaysWebView(false);
+    statusBar.applyStyle({
+      isDark,
+      backgroundColor: isDark ? '#171717' : '#f5f5f5',
+    });
+  }, [isDark, statusBar]);
 
   // Apply accent color to DOM
   useEffect(() => {
@@ -109,10 +115,10 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setPendingTheme(newTheme);
   };
 
-  // Apply pending theme and persist to cookie
+  // Apply pending theme and persist to storage
   const applyTheme = () => {
     setThemeState(pendingTheme);
-    Cookies.set('theme_preference', pendingTheme, { expires: 365, path: '/' });
+    storage.setItem('theme_preference', pendingTheme);
   };
 
   // Reset pending to current (for cancel)
@@ -125,10 +131,10 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setPendingAccentColor(color);
   };
 
-  // Apply pending accent color and persist to cookie
+  // Apply pending accent color and persist to storage
   const applyAccentColor = () => {
     setAccentColorState(pendingAccentColor);
-    Cookies.set('accent_color', pendingAccentColor, { expires: 365, path: '/' });
+    storage.setItem('accent_color', pendingAccentColor);
   };
 
   // Reset pending accent color to current (for cancel)

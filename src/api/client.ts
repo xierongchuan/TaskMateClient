@@ -1,10 +1,10 @@
 import axios, { type AxiosInstance, type AxiosError } from 'axios';
-import { Capacitor } from '@capacitor/core';
+import { isNative } from '../platform';
 import { debugAuth } from '../utils/debug';
 import { rateLimitManager, parseRetryAfter } from '../utils/rateLimitManager';
 
 const getBaseUrl = (): string => {
-  if (Capacitor.isNativePlatform()) {
+  if (isNative()) {
     const url = import.meta.env.VITE_API_BASE_URL;
     if (!url || url.startsWith('/')) {
       console.error('VITE_API_BASE_URL must be an absolute URL for Capacitor builds (e.g. http://192.168.1.10:8007/api/v1)');

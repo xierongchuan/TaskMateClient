@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { NavGroupId, SidebarMode, ExpandedGroups } from '../types/navigation';
+import { createZustandStorage } from '../platform/storage/zustand';
 
 interface SidebarState {
   /** Режим отображения сайдбара (expanded/mini) */
@@ -96,6 +97,7 @@ export const useSidebarStore = create<SidebarState>()(
     }),
     {
       name: 'sidebar-storage',
+      storage: createZustandStorage(),
       partialize: (state) => ({
         mode: state.mode,
         expandedGroups: state.expandedGroups,

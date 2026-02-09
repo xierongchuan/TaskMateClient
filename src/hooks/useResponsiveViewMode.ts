@@ -1,16 +1,16 @@
 import { useState, useEffect } from 'react';
-import Cookies from 'js-cookie';
+import { getPlatformStorage } from '../platform';
 
 type ViewMode = 'list' | 'grid';
 
 /**
- * Hook for responsive view mode switching with cookie persistence.
+ * Hook for responsive view mode switching with platform storage persistence.
  * Automatically switches to grid mode on mobile/tablet devices.
  *
  * @param defaultMode - Default view mode for desktop
  * @param mobileMode - Mode to use on mobile (default: 'grid')
  * @param breakpoint - Breakpoint in pixels (default: 768 = md)
- * @param storageKey - Optional key to persist the view mode in cookies
+ * @param storageKey - Optional key to persist the view mode
  */
 export function useResponsiveViewMode(
   defaultMode: ViewMode = 'list',
@@ -18,26 +18,28 @@ export function useResponsiveViewMode(
   breakpoint: number = 768,
   storageKey?: string
 ) {
-  // Initialize state from cookie if available, otherwise use default
-  const [viewMode, setViewModeState] = useState<ViewMode>(() => {
-    if (storageKey) {
-      const savedMode = Cookies.get(storageKey);
-      // Migrate legacy 'cards' to 'grid'
-      if (savedMode === 'cards') return 'grid';
-      if (savedMode && ['list', 'grid'].includes(savedMode)) {
-        return savedMode as ViewMode;
-      }
-    }
-    return defaultMode;
-  });
-
+  const [viewMode, setViewModeState] = useState<ViewMode>(defaultMode);
   const [isMobile, setIsMobile] = useState(false);
 
-  // Wrapper for setViewMode to handle cookie persistence
+  // Hydrate from platform storage
+  useEffect(() => {
+    if (!storageKey) return;
+    const storage = getPlatformStorage();
+    storage.getItem(storageKey).then((savedMode) => {
+      if (savedMode === 'cards') {
+        setViewModeState('grid'); // Migrate legacy 'cards' to 'grid'
+      } else if (savedMode && ['list', 'grid'].includes(savedMode)) {
+        setViewModeState(savedMode as ViewMode);
+      }
+    });
+  }, [storageKey]);
+
+  // Wrapper for setViewMode to handle persistence
   const setViewMode = (mode: ViewMode) => {
     setViewModeState(mode);
     if (storageKey) {
-      Cookies.set(storageKey, mode, { expires: 365 }); // Save for 1 year
+      const storage = getPlatformStorage();
+      storage.setItem(storageKey, mode);
     }
   };
 
@@ -47,7 +49,7 @@ export function useResponsiveViewMode(
       setIsMobile(mobile);
 
       // Note: We don't auto-switch the state itself anymore to preserve
-      // the user's desktop preference in the state/cookie.
+      // the user's desktop preference in the state/storage.
       // Instead we rely on effectiveViewMode below.
     };
 
@@ -59,7 +61,7 @@ export function useResponsiveViewMode(
     return () => window.removeEventListener('resize', checkMobile);
   }, [breakpoint]);
 
-  // Force mobile mode when on mobile device, otherwise use the selected mode (from state/cookie)
+  // Force mobile mode when on mobile device, otherwise use the selected mode (from state/storage)
   const effectiveViewMode = isMobile ? mobileMode : viewMode;
 
   return {

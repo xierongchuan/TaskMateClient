@@ -5,6 +5,7 @@ import { authApi } from '../api/auth';
 import { setAuthHelpers } from '../api/client';
 import { debugAuth } from '../utils/debug';
 import { useWorkspaceStore } from './workspaceStore';
+import { createZustandStorage } from '../platform/storage/zustand';
 
 interface AuthState {
   user: User | null;
@@ -122,13 +123,15 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'auth-storage',
+      storage: createZustandStorage(),
       partialize: (state) => ({
         token: state.token,
         user: state.user,
         isAuthenticated: state.isAuthenticated,
       }),
       onRehydrateStorage: () => (state) => {
-        // Mark hydration as complete after state is restored from localStorage
+        // Direct mutation — works for synchronous hydration (web/localStorage)
+        // On web: hydration is sync → mutation before React subscribes → first render sees true
         if (state) {
           state.hasHydrated = true;
           debugAuth.log('Hydration complete. Auth state:', {
@@ -142,6 +145,17 @@ export const useAuthStore = create<AuthState>()(
     }
   )
 );
+
+// For async hydration (mobile/@capacitor/preferences):
+// onFinishHydration is registered AFTER create() → useAuthStore is defined
+useAuthStore.persist.onFinishHydration(() => {
+  useAuthStore.setState({ hasHydrated: true });
+});
+
+// Fallback: if sync hydration already completed before onFinishHydration registration
+if (useAuthStore.persist.hasHydrated()) {
+  useAuthStore.setState({ hasHydrated: true });
+}
 
 // Register auth helpers with API client to avoid circular dependencies
 setAuthHelpers(

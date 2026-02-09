@@ -9,14 +9,16 @@
   <body>
     <div id="root"></div>
     <script>
-      window.onerror = function(msg, url, line, col) {
-        var el = document.getElementById('root');
-        if (el) el.innerText = '[onerror] ' + msg + '\n' + (url||'') + ':' + line + ':' + col;
-      };
-      window.addEventListener('unhandledrejection', function(e) {
-        var el = document.getElementById('root');
-        if (el) el.innerText = '[rejection] ' + (e.reason && e.reason.message || e.reason);
-      });
+      if ('%MODE%' !== 'production') {
+        window.onerror = function(msg, url, line, col) {
+          var el = document.getElementById('root');
+          if (el) el.innerText = '[onerror] ' + msg + '\n' + (url||'') + ':' + line + ':' + col;
+        };
+        window.addEventListener('unhandledrejection', function(e) {
+          var el = document.getElementById('root');
+          if (el) el.innerText = '[rejection] ' + (e.reason && e.reason.message || e.reason);
+        });
+      }
     </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>

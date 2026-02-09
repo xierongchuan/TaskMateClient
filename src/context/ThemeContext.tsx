@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import Cookies from 'js-cookie';
+import { Capacitor } from '@capacitor/core';
+import { StatusBar, Style } from '@capacitor/status-bar';
 
 export type Theme = 'light' | 'dark' | 'system';
 export type AccentColor = 'blue' | 'green' | 'purple' | 'orange' | 'teal';
@@ -67,6 +69,14 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       root.classList.remove('dark');
     }
   }, [theme]);
+
+  // Синхронизация цвета статус-бара с темой (Capacitor)
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+    StatusBar.setOverlaysWebView({ overlay: false });
+    StatusBar.setBackgroundColor({ color: isDark ? '#171717' : '#f5f5f5' });
+    StatusBar.setStyle({ style: isDark ? Style.Dark : Style.Light });
+  }, [isDark]);
 
   // Apply accent color to DOM
   useEffect(() => {

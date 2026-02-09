@@ -234,6 +234,87 @@ VITE_API_BASE_URL=http://localhost:8007/api/v1
 
 При использовании Docker переменные должны передаваться как **build arguments**, а не runtime environment variables. Смотрите раздел "Docker" выше для подробностей.
 
+## Android (Capacitor)
+
+Приложение можно собрать как нативное Android-приложение через Capacitor 8. Сборка происходит внутри Docker-контейнера — Android Studio не нужна.
+
+### Как это работает
+
+Capacitor оборачивает собранный Vite-билд (`dist/`) в нативный Android WebView. Приложение работает как обычное Android-приложение, но внутри — веб-интерфейс TaskMate.
+
+### Файлы Capacitor
+
+```
+TaskMateClient/
+├── capacitor.config.ts      # Конфигурация Capacitor (appId, webDir)
+├── android/                 # Нативный Android-проект (коммитится в git)
+│   ├── app/
+│   │   ├── build.gradle     # Gradle конфигурация приложения
+│   │   └── src/main/
+│   │       ├── AndroidManifest.xml
+│   │       ├── java/ru/andcrm/vfp/  # MainActivity
+│   │       └── assets/public/        # Сюда копируется dist/ при cap sync
+│   ├── variables.gradle     # Версии SDK (compileSdk 36, minSdk 24)
+│   └── gradle/              # Gradle wrapper (8.14.3)
+```
+
+### Команды
+
+```bash
+# Сборка web-ассетов + синхронизация с Android
+npm run cap:build
+
+# Только синхронизация (если dist/ уже собран)
+npm run cap:sync
+```
+
+### Сборка APK (из корня монорепо)
+
+```bash
+# Первая сборка Docker-образа (~3 ГБ: JDK 21 + Node 22 + Android SDK 36)
+podman compose --profile android build android-builder
+
+# Сборка APK
+./scripts/build-android.sh
+# Результат: android/app/build/outputs/apk/debug/app-debug.apk (4.2 МБ)
+```
+
+### Установка на устройство по Wi-Fi
+
+На телефоне: Настройки > Для разработчиков > Отладка по Wi-Fi. Нужны значения с **двух разных мест**:
+
+- **Модальное окно** (кнопка "Сопряжение через код") — IP:port (`ADB_PAIR_TARGET`) + 6-значный код (`ADB_PAIR_CODE`). Одноразовое сопряжение.
+- **Основной экран** "Отладка по Wi-Fi", строка "IP-адрес и порт" (видна без нажатия кнопок) — IP:port (`ADB_CONNECT`). Постоянный порт для подключения, **отличается** от порта сопряжения.
+
+```bash
+# Первый раз: сопряжение + подключение + сборка + установка
+ADB_PAIR_TARGET=192.168.1.X:XXXXX \
+ADB_PAIR_CODE=XXXXXX \
+ADB_CONNECT=192.168.1.X:YYYYY \
+./scripts/build-android.sh --pair --deploy
+
+# Последующие разы: подключение + сборка + установка
+ADB_CONNECT=192.168.1.X:YYYYY \
+./scripts/build-android.sh --deploy
+```
+
+### API URL
+
+Переменная `VITE_API_BASE_URL` вшивается в APK при сборке. Для Android она берётся из `ANDROID_API_URL` в `.env`:
+
+| Режим | Значение |
+|-------|----------|
+| Через туннель | `http://173.212.212.236/api/v1` |
+| Через LAN | `http://192.168.x.x:8099/api/v1` |
+| Production | `https://site.com/api/v1` |
+
+### Смена appId
+
+Для смены нужно обновить:
+1. `capacitor.config.ts` — поле `appId`
+2. `android/app/build.gradle` — `namespace` и `applicationId`
+3. `android/app/src/main/java/` — переименовать пакет
+
 ## Документация API
 
 Смотрите файл `creating_intructions/FRONTEND_GUIDE.md` для подробной документации по интеграции с API.

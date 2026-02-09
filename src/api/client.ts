@@ -1,8 +1,20 @@
 import axios, { type AxiosInstance, type AxiosError } from 'axios';
+import { Capacitor } from '@capacitor/core';
 import { debugAuth } from '../utils/debug';
 import { rateLimitManager, parseRetryAfter } from '../utils/rateLimitManager';
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
+const getBaseUrl = (): string => {
+  if (Capacitor.isNativePlatform()) {
+    const url = import.meta.env.VITE_API_BASE_URL;
+    if (!url || url.startsWith('/')) {
+      console.error('VITE_API_BASE_URL must be an absolute URL for Capacitor builds (e.g. http://192.168.1.10:8007/api/v1)');
+    }
+    return url || '/api/v1';
+  }
+  return import.meta.env.VITE_API_BASE_URL || '/api/v1';
+};
+
+const BASE_URL = getBaseUrl();
 
 const apiClient: AxiosInstance = axios.create({
   baseURL: BASE_URL,

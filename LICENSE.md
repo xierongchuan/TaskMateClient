@@ -1,5 +1,5 @@
 # 🛡️ Strict Proprietary Software License
-**For TaskMateFrontend**
+**For TaskMateClient**
 
 This software and its source code, documentation, and all associated files (collectively, the "Software") are the sole property of [**https://github.com/xierongchuan**](https://github.com/xierongchuan), an individual ("Licensor").
 
@@ -45,4 +45,4 @@ This agreement is governed by the laws of the Republic of Uzbekistan and applica
 
 ---
 
-Any use of TaskMateFrontend without explicit written permission is a violation of this license. All rights reserved.
+Any use of TaskMateClient without explicit written permission is a violation of this license. All rights reserved.

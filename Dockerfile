@@ -17,9 +17,11 @@ COPY . .
 # Accept build-time arguments for Vite environment variables
 # These will be embedded into the built JavaScript at build time
 ARG VITE_API_BASE_URL=http://localhost:8007/api/v1
+ARG VITE_APP_NAME=TaskMate
 
 # Set as environment variable so Vite can access it during build
 ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
+ENV VITE_APP_NAME=${VITE_APP_NAME}
 
 # Build the application
 RUN npm run build

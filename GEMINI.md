@@ -4,7 +4,7 @@ React SPA для TaskMate. Общие правила — в [../GEMINI.md](../GE
 
 ## Стек
 
-React 19 + TypeScript 5.9 + Vite 7 + Tailwind 3.4 + TanStack Query 5 + Zustand 5 + react-hook-form 7 + date-fns 4.
+React 19 + TypeScript 5.9 + Vite 7 + Tailwind 3.4 + TanStack Query 5 + Zustand 5 + react-hook-form 7 + date-fns 4 + Capacitor 8.
 
 ## Структура
 
@@ -111,4 +111,6 @@ const [selectedItem, setSelectedItem] = useState<Item | null>(null);
 npm run dev       # Dev server
 npm run build     # Production (tsc -b + vite build)
 npm run lint      # ESLint
+npm run cap:sync  # Синхронизация Capacitor (Android)
+npm run cap:build # Сборка + Синхронизация Capacitor
 ```

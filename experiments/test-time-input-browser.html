@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time Input Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+        }
+        input {
+            padding: 8px;
+            font-size: 16px;
+            margin: 10px 0;
+            display: block;
+        }
+        .value-display {
+            background: #f0f0f0;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>Тест поля времени (Time Input Test)</h1>
+
+    <div class="test-section">
+        <h3>1. Обычный time input (БЕЗ step="60")</h3>
+        <label>Время повторения:</label>
+        <input type="time" id="time1" value="14:30:00">
+        <div class="value-display">
+            Значение: <span id="value1">14:30:00</span>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h3>2. Time input С step="60"</h3>
+        <label>Время повторения:</label>
+        <input type="time" id="time2" step="60" value="14:30">
+        <div class="value-display">
+            Значение: <span id="value2">14:30</span>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h3>3. datetime-local input (для сравнения)</h3>
+        <label>Дата и время:</label>
+        <input type="datetime-local" id="datetime1" value="2025-11-14T14:30">
+        <div class="value-display">
+            Значение: <span id="datetime-value1">2025-11-14T14:30</span>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h3>4. Time input С step="1" (показывает секунды)</h3>
+        <label>Время повторения:</label>
+        <input type="time" id="time3" step="1" value="14:30:45">
+        <div class="value-display">
+            Значение: <span id="value3">14:30:45</span>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h3>Информация о браузере</h3>
+        <div class="value-display">
+            User Agent: <span id="user-agent"></span>
+        </div>
+    </div>
+
+    <script>
+        // Update value displays
+        const inputs = [
+            { input: 'time1', display: 'value1' },
+            { input: 'time2', display: 'value2' },
+            { input: 'datetime1', display: 'datetime-value1' },
+            { input: 'time3', display: 'value3' }
+        ];
+
+        inputs.forEach(({ input, display }) => {
+            const inputEl = document.getElementById(input);
+            const displayEl = document.getElementById(display);
+
+            inputEl.addEventListener('change', () => {
+                displayEl.textContent = inputEl.value;
+            });
+
+            inputEl.addEventListener('input', () => {
+                displayEl.textContent = inputEl.value;
+            });
+        });
+
+        // Display user agent
+        document.getElementById('user-agent').textContent = navigator.userAgent;
+
+        console.log('Browser Support Tests:');
+        console.log('1. Time input without step:', document.getElementById('time1').value);
+        console.log('2. Time input with step="60":', document.getElementById('time2').value);
+        console.log('3. Datetime-local input:', document.getElementById('datetime1').value);
+        console.log('4. Time input with step="1":', document.getElementById('time3').value);
+    </script>
+</body>
+</html>

@@ -1,0 +1,367 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Viewport & Safe Area */
+:root {
+  --viewport-height: 100dvh;
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Accent Color System - CSS Variables */
+:root {
+  /* Default: Blue */
+  --accent-50: 239 246 255;
+  --accent-100: 219 234 254;
+  --accent-200: 191 219 254;
+  --accent-300: 147 197 253;
+  --accent-400: 96 165 250;
+  --accent-500: 59 130 246;
+  --accent-600: 37 99 235;
+  --accent-700: 29 78 216;
+  --accent-800: 30 64 175;
+  --accent-900: 30 58 138;
+  --accent-950: 23 37 84;
+}
+
+/* Blue (default) */
+[data-accent="blue"], :root {
+  --accent-50: 239 246 255;
+  --accent-100: 219 234 254;
+  --accent-200: 191 219 254;
+  --accent-300: 147 197 253;
+  --accent-400: 96 165 250;
+  --accent-500: 59 130 246;
+  --accent-600: 37 99 235;
+  --accent-700: 29 78 216;
+  --accent-800: 30 64 175;
+  --accent-900: 30 58 138;
+  --accent-950: 23 37 84;
+}
+
+/* Green */
+[data-accent="green"] {
+  --accent-50: 240 253 244;
+  --accent-100: 220 252 231;
+  --accent-200: 187 247 208;
+  --accent-300: 134 239 172;
+  --accent-400: 74 222 128;
+  --accent-500: 34 197 94;
+  --accent-600: 22 163 74;
+  --accent-700: 21 128 61;
+  --accent-800: 22 101 52;
+  --accent-900: 20 83 45;
+  --accent-950: 5 46 22;
+}
+
+/* Purple */
+[data-accent="purple"] {
+  --accent-50: 250 245 255;
+  --accent-100: 243 232 255;
+  --accent-200: 233 213 255;
+  --accent-300: 216 180 254;
+  --accent-400: 192 132 252;
+  --accent-500: 168 85 247;
+  --accent-600: 147 51 234;
+  --accent-700: 126 34 206;
+  --accent-800: 107 33 168;
+  --accent-900: 88 28 135;
+  --accent-950: 59 7 100;
+}
+
+/* Orange */
+[data-accent="orange"] {
+  --accent-50: 255 247 237;
+  --accent-100: 255 237 213;
+  --accent-200: 254 215 170;
+  --accent-300: 253 186 116;
+  --accent-400: 251 146 60;
+  --accent-500: 249 115 22;
+  --accent-600: 234 88 12;
+  --accent-700: 194 65 12;
+  --accent-800: 154 52 18;
+  --accent-900: 124 45 18;
+  --accent-950: 67 20 7;
+}
+
+/* Teal */
+[data-accent="teal"] {
+  --accent-50: 240 253 250;
+  --accent-100: 204 251 241;
+  --accent-200: 153 246 228;
+  --accent-300: 94 234 212;
+  --accent-400: 45 212 191;
+  --accent-500: 20 184 166;
+  --accent-600: 13 148 136;
+  --accent-700: 15 118 110;
+  --accent-800: 17 94 89;
+  --accent-900: 19 78 74;
+  --accent-950: 4 47 46;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+@keyframes slideInUp {
+  from {
+    transform: translateY(1rem);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in-up {
+  animation: slideInUp 0.3s ease-out forwards;
+}
+
+/* ===== Login Page Styles ===== */
+
+/* Mesh gradient blob animations */
+@keyframes mesh-float-1 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(30px, -50px) scale(1.1);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+}
+
+@keyframes mesh-float-2 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(-40px, 30px) scale(1.05);
+  }
+  66% {
+    transform: translate(50px, -30px) scale(0.95);
+  }
+}
+
+@keyframes mesh-float-3 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(20px, 40px) scale(1.15);
+  }
+}
+
+/* Mesh blob base styles */
+.mesh-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.5;
+  will-change: transform;
+}
+
+.mesh-blob-1 {
+  width: 500px;
+  height: 500px;
+  background: rgb(var(--accent-400) / 0.5);
+  top: -150px;
+  left: -150px;
+  animation: mesh-float-1 20s ease-in-out infinite;
+}
+
+.mesh-blob-2 {
+  width: 400px;
+  height: 400px;
+  background: rgb(var(--accent-300) / 0.4);
+  bottom: -100px;
+  right: -100px;
+  animation: mesh-float-2 25s ease-in-out infinite;
+}
+
+.mesh-blob-3 {
+  width: 350px;
+  height: 350px;
+  background: rgb(var(--accent-500) / 0.3);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: mesh-float-3 30s ease-in-out infinite;
+}
+
+/* Dark mode mesh adjustments */
+.dark .mesh-blob {
+  opacity: 0.25;
+}
+
+.dark .mesh-blob-1 {
+  background: rgb(var(--accent-500) / 0.4);
+}
+
+.dark .mesh-blob-2 {
+  background: rgb(var(--accent-400) / 0.35);
+}
+
+.dark .mesh-blob-3 {
+  background: rgb(var(--accent-600) / 0.3);
+}
+
+/* Glass card effect */
+.glass-card {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.08),
+    0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.dark .glass-card {
+  background: rgba(38, 38, 38, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.25),
+    0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Fallback for browsers without backdrop-filter */
+@supports not (backdrop-filter: blur(20px)) {
+  .glass-card {
+    background: rgba(255, 255, 255, 0.95);
+  }
+  .dark .glass-card {
+    background: rgba(38, 38, 38, 0.95);
+  }
+}
+
+/* Card entrance animation */
+@keyframes card-entrance {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-card-entrance {
+  animation: card-entrance 0.5s ease-out forwards;
+}
+
+/* Unified input styling */
+.unified-input {
+  transition: all 0.2s ease;
+}
+
+.unified-input:focus {
+  box-shadow:
+    0 0 0 3px rgb(var(--accent-500) / 0.15),
+    0 2px 8px rgb(var(--accent-500) / 0.1);
+}
+
+/* Error state for unified input */
+.unified-input-error:focus {
+  box-shadow:
+    0 0 0 3px rgb(239 68 68 / 0.15),
+    0 2px 8px rgb(239 68 68 / 0.1);
+}
+
+/* Login button enhanced */
+.login-button {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.login-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: left 0.5s ease;
+}
+
+.login-button:hover::before {
+  left: 100%;
+}
+
+.login-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgb(var(--accent-600) / 0.35);
+}
+
+.login-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .mesh-blob,
+  .mesh-blob-1,
+  .mesh-blob-2,
+  .mesh-blob-3 {
+    animation: none;
+  }
+
+  .animate-card-entrance {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .login-button::before {
+    display: none;
+  }
+
+  .login-button:hover:not(:disabled) {
+    transform: none;
+  }
+}
+
+@media print {
+  html,
+  body,
+  #root {
+    height: auto !important;
+    overflow: visible !important;
+    background-color: white !important;
+  }
+
+  /* Reset background colors for better printing */
+  .bg-gray-100, .dark .bg-gray-900 {
+    background-color: white !important;
+  }
+
+  /* Ensure text is black */
+  .text-gray-900, .dark .text-white {
+    color: black !important;
+  }
+
+  /* Avoid breaking inside cards */
+  .card, .p-6, .mb-6 {
+    break-inside: avoid;
+  }
+}

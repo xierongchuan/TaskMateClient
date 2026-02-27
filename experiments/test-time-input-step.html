@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест time input с step=60</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+        input[type="time"] {
+            padding: 8px;
+            font-size: 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f3f4f6;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Тестирование time input с step="60"</h1>
+
+    <div class="test-section">
+        <h2>Без step (показывает секунды)</h2>
+        <label>
+            Время:
+            <input type="time" id="time-default" />
+        </label>
+        <div class="result">
+            Значение: <span id="value-default">-</span>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>С step="60" (только часы:минуты)</h2>
+        <label>
+            Время:
+            <input type="time" step="60" id="time-step" />
+        </label>
+        <div class="result">
+            Значение: <span id="value-step">-</span>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Проверка формата отправки</h2>
+        <form id="test-form">
+            <label>
+                Время повторения:
+                <input type="time" step="60" id="recurrence-time" name="recurrence_time" />
+            </label>
+            <button type="submit" style="margin-left: 10px; padding: 8px 16px;">Отправить</button>
+        </form>
+        <div class="result">
+            Отправляемое значение: <span id="submit-value">-</span>
+        </div>
+    </div>
+
+    <script>
+        // Тест 1: без step
+        document.getElementById('time-default').addEventListener('change', function(e) {
+            document.getElementById('value-default').textContent = e.target.value;
+            console.log('Default time input value:', e.target.value);
+        });
+
+        // Тест 2: с step="60"
+        document.getElementById('time-step').addEventListener('change', function(e) {
+            document.getElementById('value-step').textContent = e.target.value;
+            console.log('Time input with step=60 value:', e.target.value);
+        });
+
+        // Тест 3: форма
+        document.getElementById('test-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const value = document.getElementById('recurrence-time').value;
+
+            // Симуляция обработки как в TaskModal.tsx
+            const formattedValue = value ? value.substring(0, 5) : '';
+
+            document.getElementById('submit-value').textContent = formattedValue;
+            console.log('Original value:', value);
+            console.log('Formatted value (HH:MM):', formattedValue);
+
+            alert(`Отправляется: "${formattedValue}"`);
+        });
+
+        // Предзаполнение для демонстрации
+        document.getElementById('time-default').value = '14:30';
+        document.getElementById('value-default').textContent = '14:30';
+
+        document.getElementById('time-step').value = '14:30';
+        document.getElementById('value-step').textContent = '14:30';
+    </script>
+</body>
+</html>

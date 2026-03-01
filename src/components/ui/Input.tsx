@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useId } from 'react';
 
 export type InputSize = 'sm' | 'md' | 'lg';
 
@@ -61,7 +61,8 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(({
   id,
   ...props
 }, ref) => {
-  const inputId = id || `input-${Math.random().toString(36).substr(2, 9)}`;
+  const generatedId = useId();
+  const inputId = id || generatedId;
 
   const baseInputClasses = 'unified-input block rounded-xl border shadow-sm transition-all duration-200 focus:outline-none focus:border-accent-500 disabled:opacity-50 disabled:cursor-not-allowed';
 

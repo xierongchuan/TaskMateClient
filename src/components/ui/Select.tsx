@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useId } from 'react';
 
 export type SelectSize = 'sm' | 'md' | 'lg';
 
@@ -58,7 +58,8 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(({
   id,
   ...props
 }, ref) => {
-  const selectId = id || `select-${Math.random().toString(36).substr(2, 9)}`;
+  const generatedId = useId();
+  const selectId = id || generatedId;
 
   const baseClasses = 'unified-input block rounded-xl border shadow-sm transition-all duration-200 focus:outline-none focus:border-accent-500 disabled:opacity-50 disabled:cursor-not-allowed';
 

@@ -100,7 +100,17 @@ export const TasksPage: React.FC = () => {
         return next;
       }, { replace: true });
     }
-  }, [searchParams, setSearchParams]);
+
+    const action = searchParams.get('action');
+    if (action === 'create' && permissions.canManageTasks) {
+      setIsModalOpen(true);
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev);
+        next.delete('action');
+        return next;
+      }, { replace: true });
+    }
+  }, [searchParams, setSearchParams, permissions.canManageTasks]);
 
   const { data: tasksData, isLoading, error, refetch } = useQuery({
     queryKey: ['tasks', filters, workspaceDealershipId, page, limit],

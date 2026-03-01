@@ -212,11 +212,13 @@ export const PendingReviewPage: React.FC = () => {
       />
 
       {/* Информация о найденных задачах */}
-      <div className="mb-6">
-        <span className="text-sm text-gray-500 dark:text-gray-400">
-          Найдено: {tasksData?.total || 0} задач
-        </span>
-      </div>
+      {!isLoading && (
+        <div className="mb-6">
+          <span className="text-sm text-gray-500 dark:text-gray-400">
+            Найдено: {tasksData?.total || 0} задач
+          </span>
+        </div>
+      )}
 
       {/* Контент */}
       {isLoading ? (

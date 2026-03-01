@@ -106,12 +106,12 @@ export const Modal: React.FC<ModalProps> & {
           />
 
           {/* Modal */}
-          <div className={modalClasses} onClick={(e) => e.stopPropagation()}>
+          <div role="dialog" aria-modal="true" aria-labelledby={title ? 'modal-title' : undefined} className={modalClasses} onClick={(e) => e.stopPropagation()}>
             {/* Header */}
             {(title || showCloseButton) && (
               <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700">
                 {title && (
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  <h3 id="modal-title" className="text-lg font-semibold text-gray-900 dark:text-white">
                     {title}
                   </h3>
                 )}

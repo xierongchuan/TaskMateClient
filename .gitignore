@@ -25,6 +25,7 @@ android/capacitor-cordova-android-plugins/build/
 
 # Playwright
 test-results/
+tests/.auth/
 
 # Editor directories and files
 .vscode/*

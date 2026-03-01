@@ -273,8 +273,8 @@ export const ArchivedTasksPage: React.FC = () => {
               mode={viewMode}
               onChange={(mode) => setViewMode(mode as 'list' | 'grid')}
               options={[
-                { value: 'list', icon: <ListBulletIcon className="w-4 h-4" /> },
-                { value: 'grid', icon: <Squares2X2Icon className="w-4 h-4" /> },
+                { value: 'list', icon: <ListBulletIcon className="w-4 h-4" />, label: 'Список' },
+                { value: 'grid', icon: <Squares2X2Icon className="w-4 h-4" />, label: 'Карточки' },
               ]}
             />
           )}

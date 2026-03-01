@@ -2,6 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: './tests',
+  outputDir: './test-results',
   timeout: 30000,
   fullyParallel: true,
   retries: 0,
@@ -9,7 +10,7 @@ export default defineConfig({
   use: {
     baseURL: 'http://localhost:8099',
     trace: 'on-first-retry',
-    screenshot: 'only-on-failure',
+    screenshot: 'on',
   },
   projects: [
     {

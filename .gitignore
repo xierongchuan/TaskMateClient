@@ -23,6 +23,9 @@ android/*.iml
 android/app/*.iml
 android/capacitor-cordova-android-plugins/build/
 
+# Playwright
+test-results/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

@@ -1,4 +1,5 @@
 import apiClient from './client';
+import type { ApiSuccessResponse } from '../types/api';
 
 /**
  * Конфигурация загрузки файлов для одного пресета.
@@ -30,8 +31,8 @@ export interface FileUploadConfig {
  * @returns Конфигурация для всех пресетов
  */
 export const getFileUploadConfig = async (): Promise<FileUploadConfig> => {
-  const response = await apiClient.get<FileUploadConfig>('/config/file-upload');
-  return response.data;
+  const response = await apiClient.get<ApiSuccessResponse<FileUploadConfig>>('/config/file-upload');
+  return response.data.data;
 };
 
 /**
@@ -43,6 +44,6 @@ export const getFileUploadConfig = async (): Promise<FileUploadConfig> => {
 export const getFileUploadPresetConfig = async (
   preset: 'task_proof' | 'shift_photo'
 ): Promise<FileUploadPresetConfig> => {
-  const response = await apiClient.get<FileUploadPresetConfig>(`/config/file-upload/${preset}`);
-  return response.data;
+  const response = await apiClient.get<ApiSuccessResponse<FileUploadPresetConfig>>(`/config/file-upload/${preset}`);
+  return response.data.data;
 };

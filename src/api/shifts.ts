@@ -53,9 +53,9 @@ export const shiftsApi = {
     return response.data;
   },
 
-  // Get current user's shifts
-  getMyShifts: async (filters?: ShiftsFilters): Promise<PaginatedResponse<Shift>> => {
-    const response = await apiClient.get<PaginatedResponse<Shift>>('/shifts/my', {
+  // Get current user's shifts (non-paginated list)
+  getMyShifts: async (filters?: ShiftsFilters): Promise<{ success: boolean; data: Shift[] }> => {
+    const response = await apiClient.get<{ success: boolean; data: Shift[] }>('/shifts/my', {
       params: filters,
     });
     return response.data;

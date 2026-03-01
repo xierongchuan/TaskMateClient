@@ -1,4 +1,5 @@
 import apiClient from './client';
+import type { ApiSuccessResponse } from '../types/api';
 
 export interface NotificationSetting {
   id: number;
@@ -48,17 +49,17 @@ export const notificationSettingsApi = {
     return response.data;
   },
 
-  bulkUpdate: async (data: BulkUpdateRequest): Promise<{ message: string; updated_count: number }> => {
-    const response = await apiClient.post<{ message: string; updated_count: number }>(
+  bulkUpdate: async (data: BulkUpdateRequest): Promise<ApiSuccessResponse<{ updated_count: number }>> => {
+    const response = await apiClient.post<ApiSuccessResponse<{ updated_count: number }>>(
       '/notification-settings/bulk',
       data
     );
     return response.data;
   },
 
-  resetToDefaults: async (dealershipId?: number): Promise<{ message: string }> => {
+  resetToDefaults: async (dealershipId?: number): Promise<ApiSuccessResponse<null>> => {
     const data = dealershipId ? { dealership_id: dealershipId } : {};
-    const response = await apiClient.post<{ message: string }>('/notification-settings/reset', data);
+    const response = await apiClient.post<ApiSuccessResponse<null>>('/notification-settings/reset', data);
     return response.data;
   },
 };

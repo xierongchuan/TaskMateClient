@@ -51,10 +51,23 @@ export const auditLogsApi = {
    * Get list of audit logs (owner only)
    */
   getAuditLogs: async (filters?: AuditLogsFilters): Promise<PaginatedResponse<AuditLog>> => {
-    const response = await apiClient.get<PaginatedResponse<AuditLog>>('/audit-logs', {
+    const response = await apiClient.get<{
+      success: boolean;
+      data: AuditLog[];
+      current_page: number;
+      last_page: number;
+      per_page: number;
+      total: number;
+    }>('/audit-logs', {
       params: filters,
     });
-    return response.data;
+    return {
+      data: response.data.data,
+      current_page: response.data.current_page,
+      last_page: response.data.last_page,
+      per_page: response.data.per_page,
+      total: response.data.total,
+    };
   },
 
   /**

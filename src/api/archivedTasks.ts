@@ -1,6 +1,6 @@
 import apiClient from './client';
 import type { ArchivedTask, ArchivedTaskFilters, ArchivedTaskStatistics } from '../types/archivedTask';
-import type { PaginatedResponse } from '../types/api';
+import type { ApiSuccessResponse, PaginatedResponse } from '../types/api';
 import { getTodayDateString } from '../utils/dateTime';
 
 export const archivedTasksApi = {
@@ -17,8 +17,8 @@ export const archivedTasksApi = {
   /**
    * Restore a task from archive
    */
-  restoreTask: async (id: number): Promise<{ success: boolean; data: ArchivedTask; message: string }> => {
-    const response = await apiClient.post<{ success: boolean; data: ArchivedTask; message: string }>(`/archived-tasks/${id}/restore`);
+  restoreTask: async (id: number): Promise<ApiSuccessResponse<ArchivedTask>> => {
+    const response = await apiClient.post<ApiSuccessResponse<ArchivedTask>>(`/archived-tasks/${id}/restore`);
     return response.data;
   },
 
@@ -54,7 +54,7 @@ export const archivedTasksApi = {
    */
   getStatistics: async (dealershipId?: number): Promise<ArchivedTaskStatistics> => {
     const params = dealershipId ? { dealership_id: dealershipId } : {};
-    const response = await apiClient.get<ArchivedTaskStatistics>('/archived-tasks/statistics', { params });
-    return response.data;
+    const response = await apiClient.get<ApiSuccessResponse<ArchivedTaskStatistics>>('/archived-tasks/statistics', { params });
+    return response.data.data;
   },
 };

@@ -2,6 +2,23 @@ import apiClient from './client';
 import type { User, CreateUserRequest, UpdateUserRequest } from '../types/user';
 import type { PaginatedResponse } from '../types/api';
 
+export interface UserStats {
+  has_history: boolean;
+  total_tasks: number;
+  completed_on_time: number;
+  completed_late: number;
+  overdue_tasks: number;
+  pending_review: number;
+  rejected_tasks: number;
+  completion_rate: number;
+  avg_completion_time_hours: number;
+  tasks_by_type: Record<string, number>;
+  total_shifts: number;
+  late_shifts: number;
+  missed_shifts: number;
+  performance_score: number;
+}
+
 export interface UsersFilters {
   search?: string;
   login?: string;
@@ -17,14 +34,13 @@ export interface UsersFilters {
 export const usersApi = {
   getUsers: async (filters?: UsersFilters): Promise<PaginatedResponse<User>> => {
     const response = await apiClient.get<{
+      success: boolean;
       data: User[];
-      links: any;
-      meta: {
-        current_page: number;
-        last_page: number;
-        per_page: number;
-        total: number;
-      };
+      current_page: number;
+      last_page: number;
+      per_page: number;
+      total: number;
+      links: unknown;
     }>('/users', {
       params: filters,
     });
@@ -32,10 +48,10 @@ export const usersApi = {
     // Convert API response to PaginatedResponse format
     return {
       data: response.data.data,
-      current_page: response.data.meta.current_page,
-      last_page: response.data.meta.last_page,
-      per_page: response.data.meta.per_page,
-      total: response.data.meta.total,
+      current_page: response.data.current_page,
+      last_page: response.data.last_page,
+      per_page: response.data.per_page,
+      total: response.data.total,
     };
   },
 
@@ -58,16 +74,29 @@ export const usersApi = {
     await apiClient.delete(`/users/${id}`);
   },
 
-  getUserStats: async (userId: number, dateFrom?: string, dateTo?: string) => {
+  getUserStats: async (userId: number, dateFrom?: string, dateTo?: string): Promise<UserStats> => {
     const params: { date_from?: string; date_to?: string } = {};
     if (dateFrom) params.date_from = dateFrom;
     if (dateTo) params.date_to = dateTo;
-    const response = await apiClient.get(`/users/${userId}/stats`, { params });
-    return response.data;
+    const response = await apiClient.get<{ success: boolean; data: UserStats }>(`/users/${userId}/stats`, { params });
+    return response.data.data;
   },
 
   getDealerships: async (): Promise<PaginatedResponse<any>> => {
-    const response = await apiClient.get<PaginatedResponse<any>>('/dealerships');
-    return response.data;
+    const response = await apiClient.get<{
+      success: boolean;
+      data: any[];
+      current_page: number;
+      last_page: number;
+      per_page: number;
+      total: number;
+    }>('/dealerships');
+    return {
+      data: response.data.data,
+      current_page: response.data.current_page,
+      last_page: response.data.last_page,
+      per_page: response.data.per_page,
+      total: response.data.total,
+    };
   },
 };

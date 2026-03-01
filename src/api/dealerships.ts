@@ -16,16 +16,30 @@ export type { CreateDealershipRequest } from '../types/dealership';
 export const dealershipsApi = {
   // Получить список автосалонов
   getDealerships: async (filters?: DealershipsFilters): Promise<PaginatedResponse<Dealership>> => {
-    const response = await apiClient.get<PaginatedResponse<Dealership>>('/dealerships', {
+    const response = await apiClient.get<{
+      success: boolean;
+      data: Dealership[];
+      current_page: number;
+      last_page: number;
+      per_page: number;
+      total: number;
+      links: unknown;
+    }>('/dealerships', {
       params: filters,
     });
-    return response.data;
+    return {
+      data: response.data.data,
+      current_page: response.data.current_page,
+      last_page: response.data.last_page,
+      per_page: response.data.per_page,
+      total: response.data.total,
+    };
   },
 
   // Получить автосалон по ID
   getDealership: async (id: number): Promise<Dealership> => {
-    const response = await apiClient.get<Dealership>(`/dealerships/${id}`);
-    return response.data;
+    const response = await apiClient.get<{ success: boolean; data: Dealership }>(`/dealerships/${id}`);
+    return response.data.data;
   },
 
   // Создать автосалон (только Manager/Owner)

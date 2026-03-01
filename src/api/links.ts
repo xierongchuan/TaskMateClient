@@ -11,10 +11,24 @@ export interface LinksFilters {
 
 export const linksApi = {
   getLinks: async (filters?: LinksFilters): Promise<PaginatedResponse<Link>> => {
-    const response = await apiClient.get<PaginatedResponse<Link>>('/links', {
+    const response = await apiClient.get<{
+      success: boolean;
+      data: Link[];
+      current_page: number;
+      last_page: number;
+      per_page: number;
+      total: number;
+      links: unknown;
+    }>('/links', {
       params: filters
     });
-    return response.data;
+    return {
+      data: response.data.data,
+      current_page: response.data.current_page,
+      last_page: response.data.last_page,
+      per_page: response.data.per_page,
+      total: response.data.total,
+    };
   },
 
   createLink: async (data: CreateLinkRequest): Promise<{ data: Link }> => {

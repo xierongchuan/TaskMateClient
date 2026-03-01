@@ -1,6 +1,6 @@
 import apiClient from './client';
 import type { Task, CreateTaskRequest } from '../types/task';
-import type { PaginatedResponse } from '../types/api';
+import type { ApiSuccessResponse, PaginatedResponse } from '../types/api';
 
 export interface TasksFilters {
   search?: string;
@@ -22,11 +22,6 @@ export interface MyHistoryFilters {
   page?: number;
 }
 
-export interface TaskApiResponse {
-  message: string;
-  data: Task;
-}
-
 export const tasksApi = {
   getTasks: async (filters?: TasksFilters): Promise<PaginatedResponse<Task>> => {
     const response = await apiClient.get<PaginatedResponse<Task>>('/tasks', {
@@ -36,18 +31,18 @@ export const tasksApi = {
   },
 
   getTask: async (id: number): Promise<Task> => {
-    const response = await apiClient.get<Task>(`/tasks/${id}`);
-    return response.data;
+    const response = await apiClient.get<ApiSuccessResponse<Task>>(`/tasks/${id}`);
+    return response.data.data;
   },
 
-  createTask: async (data: CreateTaskRequest): Promise<{ data: Task }> => {
-    const response = await apiClient.post<{ data: Task }>('/tasks', data);
-    return response.data;
+  createTask: async (data: CreateTaskRequest): Promise<Task> => {
+    const response = await apiClient.post<ApiSuccessResponse<Task>>('/tasks', data);
+    return response.data.data;
   },
 
-  updateTask: async (id: number, data: Partial<CreateTaskRequest>): Promise<{ data: Task }> => {
-    const response = await apiClient.put<{ data: Task }>(`/tasks/${id}`, data);
-    return response.data;
+  updateTask: async (id: number, data: Partial<CreateTaskRequest>): Promise<Task> => {
+    const response = await apiClient.put<ApiSuccessResponse<Task>>(`/tasks/${id}`, data);
+    return response.data.data;
   },
 
   updateTaskStatus: async (
@@ -63,8 +58,8 @@ export const tasksApi = {
     if (preserveProofs !== undefined) {
       payload.preserve_proofs = preserveProofs;
     }
-    const response = await apiClient.patch<Task>(`/tasks/${id}/status`, payload);
-    return response.data;
+    const response = await apiClient.patch<ApiSuccessResponse<Task>>(`/tasks/${id}/status`, payload);
+    return response.data.data;
   },
 
   /**
@@ -85,7 +80,7 @@ export const tasksApi = {
     files.forEach((file) => {
       formData.append('proof_files[]', file);
     });
-    const response = await apiClient.patch<Task>(`/tasks/${id}/status`, formData, {
+    const response = await apiClient.patch<ApiSuccessResponse<Task>>(`/tasks/${id}/status`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -97,30 +92,33 @@ export const tasksApi = {
         }
       },
     });
+    return response.data.data;
+  },
+
+  /**
+   * Approve a task response (manager/owner only).
+   * Returns the updated Task from the backend.
+   */
+  approveTaskResponse: async (taskResponseId: number): Promise<ApiSuccessResponse<Task>> => {
+    const response = await apiClient.post<ApiSuccessResponse<Task>>(`/task-responses/${taskResponseId}/approve`);
     return response.data;
   },
 
   /**
-   * Approve a task response (manager/owner only)
+   * Reject a task response with reason (manager/owner only).
+   * Returns the updated Task from the backend.
    */
-  approveTaskResponse: async (taskResponseId: number): Promise<TaskApiResponse> => {
-    const response = await apiClient.post<TaskApiResponse>(`/task-responses/${taskResponseId}/approve`);
+  rejectTaskResponse: async (taskResponseId: number, reason: string): Promise<ApiSuccessResponse<Task>> => {
+    const response = await apiClient.post<ApiSuccessResponse<Task>>(`/task-responses/${taskResponseId}/reject`, { reason });
     return response.data;
   },
 
   /**
-   * Reject a task response with reason (manager/owner only)
+   * Reject all pending_review responses for a task at once (manager/owner only).
+   * Returns the updated Task from the backend.
    */
-  rejectTaskResponse: async (taskResponseId: number, reason: string): Promise<TaskApiResponse> => {
-    const response = await apiClient.post<TaskApiResponse>(`/task-responses/${taskResponseId}/reject`, { reason });
-    return response.data;
-  },
-
-  /**
-   * Reject all pending_review responses for a task at once (manager/owner only)
-   */
-  rejectAllTaskResponses: async (taskId: number, reason: string): Promise<TaskApiResponse> => {
-    const response = await apiClient.post<TaskApiResponse>(`/tasks/${taskId}/reject-all-responses`, { reason });
+  rejectAllTaskResponses: async (taskId: number, reason: string): Promise<ApiSuccessResponse<Task>> => {
+    const response = await apiClient.post<ApiSuccessResponse<Task>>(`/tasks/${taskId}/reject-all-responses`, { reason });
     return response.data;
   },
 

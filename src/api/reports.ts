@@ -1,4 +1,5 @@
 import apiClient from './client';
+import type { ApiSuccessResponse } from '../types/api';
 
 export interface ReportData {
   period: string;
@@ -78,8 +79,8 @@ export const reportsApi = {
     if (dealershipId) {
       params.dealership_id = dealershipId;
     }
-    const response = await apiClient.get<ReportData>('/reports', { params });
-    return response.data;
+    const response = await apiClient.get<ApiSuccessResponse<ReportData>>('/reports', { params });
+    return response.data.data;
   },
 
   getIssueDetails: async (
@@ -95,7 +96,7 @@ export const reportsApi = {
     if (dealershipId) {
       params.dealership_id = dealershipId;
     }
-    const response = await apiClient.get<IssueDetailsResponse>(`/reports/issues/${issueType}`, { params });
-    return response.data;
+    const response = await apiClient.get<ApiSuccessResponse<IssueDetailsResponse>>(`/reports/issues/${issueType}`, { params });
+    return response.data.data;
   },
 };

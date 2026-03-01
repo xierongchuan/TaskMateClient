@@ -25,8 +25,11 @@ export interface LoginRequest {
   password: string;
 }
 
+/**
+ * Данные внутри data-поля ответа на login.
+ * Полный конверт: { success: true, data: LoginResponse }
+ */
 export interface LoginResponse {
-  message: string;
   token: string;
   user: User;
 }

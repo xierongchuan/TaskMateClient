@@ -110,10 +110,45 @@ const { dealershipId } = useWorkspace();
 ## Команды (специфичные для frontend)
 
 ```bash
-npm run dev       # Dev server (http://localhost:5173)
-npm run build     # Production (tsc -b + vite build)
-npm run lint      # ESLint
+# Все команды через контейнеры (npm НЕ на хосте)
+podman run --rm -v ./TaskMateClient:/app:z -w /app docker.io/library/node:22-alpine npm run dev      # Dev server
+podman run --rm -v ./TaskMateClient:/app:z -w /app docker.io/library/node:22-alpine npm run build    # Production build
+podman run --rm -v ./TaskMateClient:/app:z -w /app docker.io/library/node:22-alpine npm run lint     # ESLint
+
+# E2E тесты (Playwright)
+podman run --rm --network host -v ./TaskMateClient:/app:z -w /app mcr.microsoft.com/playwright:v1.58.0-noble npx playwright test          # Все тесты
+podman run --rm --network host -v ./TaskMateClient:/app:z -w /app mcr.microsoft.com/playwright:v1.58.0-noble npx playwright test --list    # Список без запуска
+podman run --rm --network host -v ./TaskMateClient:/app:z -w /app mcr.microsoft.com/playwright:v1.58.0-noble npx playwright test dashboard # Конкретный файл
 ```
+
+## E2E тесты (Playwright)
+
+### Структура
+
+```
+tests/
+├── setup/              # Инфраструктура аутентификации
+│   ├── auth.setup.ts   # Логин и сохранение storageState для 4 ролей
+│   └── helpers.ts      # Экспорт путей к storageState (AUTH_DIR, *_STATE)
+├── auth/               # Тесты логина (без storageState)
+│   └── login.spec.ts
+├── pages/              # Тесты страниц от admin (owner)
+│   ├── dashboard.spec.ts
+│   ├── tasks.spec.ts
+│   └── ...             # 16 файлов — по одному на страницу
+├── roles/              # Ролевые проверки доступа
+│   ├── navigation.role-check.spec.ts
+│   ├── employees.role-check.spec.ts
+│   └── ...             # 5 файлов — *.role-*.spec.ts
+└── .auth/              # Сгенерированные storageState (gitignored)
+```
+
+### Конвенции
+
+- **Именование:** `pages/` — `<страница>.spec.ts`, `roles/` — `<страница>.role-<роль|check>.spec.ts`
+- **Аутентификация:** `setup/auth.setup.ts` создаёт storageState для 4 ролей. Проект `chromium` использует admin. Ролевые тесты импортируют `*_STATE` из `../setup/helpers`
+- **Waits:** `waitForLoadState('networkidle')` после навигации, `toBeVisible({ timeout })` для элементов
+- **Локаторы:** предпочитай `getByRole()`, `getByText()`, `locator('a[href="..."]')`. Избегай хрупких CSS-селекторов
 
 ## Запрещено
 

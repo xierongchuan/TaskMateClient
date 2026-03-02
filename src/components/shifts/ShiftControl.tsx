@@ -7,8 +7,9 @@ import { DealershipSelector } from '../common/DealershipSelector';
 import { useToast, ConfirmDialog } from '../ui';
 import { useConfirmDialog } from '../../hooks/useConfirmDialog';
 import { ShiftPhotoViewer } from './ShiftPhotoViewer';
+import { ShiftScheduleSelector } from './ShiftScheduleSelector';
 import { formatDateTime } from '../../utils/dateTime';
-import type { CreateShiftRequest, UpdateShiftRequest } from '../../types/shift';
+import type { CreateShiftRequest, UpdateShiftRequest, ShiftSchedule, ScheduleAmbiguousError } from '../../types/shift';
 
 export const ShiftControl: React.FC = () => {
   const { user } = useAuth();
@@ -30,6 +31,9 @@ export const ShiftControl: React.FC = () => {
   const { showConfirm, confirmState, handleConfirm, handleCancel } = useConfirmDialog();
   const [openingPhoto, setOpeningPhoto] = useState<File | null>(null);
   const [closingPhoto, setClosingPhoto] = useState<File | null>(null);
+  const [scheduleCandidates, setScheduleCandidates] = useState<ShiftSchedule[]>([]);
+  const [pendingShiftData, setPendingShiftData] = useState<CreateShiftRequest | null>(null);
+  const [showScheduleSelector, setShowScheduleSelector] = useState(false);
 
   const handleOpenShift = async () => {
     if (!openingPhoto || !selectedDealershipId) {
@@ -49,10 +53,50 @@ export const ShiftControl: React.FC = () => {
         showToast({ type: 'success', message: 'Смена успешно открыта!' });
       },
       onError: (error: unknown) => {
+        const axiosError = error as { response?: { status?: number; data?: ScheduleAmbiguousError & { message?: string } } };
+        if (
+          axiosError.response?.status === 409 &&
+          axiosError.response.data?.error_code === 'schedule_ambiguous' &&
+          axiosError.response.data.candidates?.length
+        ) {
+          setScheduleCandidates(axiosError.response.data.candidates);
+          setPendingShiftData(shiftData);
+          setShowScheduleSelector(true);
+          return;
+        }
+        const message = axiosError.response?.data?.message || 'Неизвестная ошибка';
+        showToast({ type: 'error', message: `Ошибка открытия смены: ${message}` });
+      },
+    });
+  };
+
+  const handleScheduleSelected = (scheduleId: number) => {
+    if (!pendingShiftData) return;
+
+    setShowScheduleSelector(false);
+    const shiftDataWithSchedule: CreateShiftRequest = {
+      ...pendingShiftData,
+      shift_schedule_id: scheduleId,
+    };
+
+    createShiftMutation.mutate(shiftDataWithSchedule, {
+      onSuccess: () => {
+        setOpeningPhoto(null);
+        setPendingShiftData(null);
+        setScheduleCandidates([]);
+        showToast({ type: 'success', message: 'Смена успешно открыта!' });
+      },
+      onError: (error: unknown) => {
         const message = (error as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Неизвестная ошибка';
         showToast({ type: 'error', message: `Ошибка открытия смены: ${message}` });
       },
     });
+  };
+
+  const handleScheduleSelectorCancel = () => {
+    setShowScheduleSelector(false);
+    setPendingShiftData(null);
+    setScheduleCandidates([]);
   };
 
   const handleCloseShift = async () => {
@@ -284,6 +328,12 @@ export const ShiftControl: React.FC = () => {
       variant={confirmState.variant}
       onConfirm={handleConfirm}
       onCancel={handleCancel}
+    />
+    <ShiftScheduleSelector
+      isOpen={showScheduleSelector}
+      schedules={scheduleCandidates}
+      onSelect={handleScheduleSelected}
+      onCancel={handleScheduleSelectorCancel}
     />
     </>
   );

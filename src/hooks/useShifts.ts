@@ -111,3 +111,14 @@ export const useDeleteShift = () => {
     },
   });
 };
+
+// Hook for getting available shift schedules for a dealership
+export const useAvailableSchedules = (dealershipId?: number) => {
+  return useQuery({
+    queryKey: ['shifts', 'available-schedules', dealershipId],
+    queryFn: () => shiftsApi.getAvailableSchedules(dealershipId!),
+    enabled: !!dealershipId,
+    staleTime: 30000, // 30 seconds
+    placeholderData: (prev) => prev,
+  });
+};

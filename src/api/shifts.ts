@@ -1,5 +1,5 @@
 import apiClient from './client';
-import type { Shift, CreateShiftRequest, UpdateShiftRequest, ShiftsFilters } from '../types/shift';
+import type { Shift, ShiftSchedule, CreateShiftRequest, UpdateShiftRequest, ShiftsFilters } from '../types/shift';
 import type { PaginatedResponse } from '../types/api';
 
 export const shiftsApi = {
@@ -76,6 +76,10 @@ export const shiftsApi = {
     formData.append('dealership_id', data.dealership_id.toString());
     formData.append('opening_photo', data.opening_photo);
 
+    if (data.shift_schedule_id !== undefined) {
+      formData.append('shift_schedule_id', data.shift_schedule_id.toString());
+    }
+
     const response = await apiClient.post<{ data: Shift }>('/shifts', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
@@ -112,5 +116,13 @@ export const shiftsApi = {
   // Delete shift (only completed shifts)
   deleteShift: async (id: number): Promise<void> => {
     await apiClient.delete(`/shifts/${id}`);
+  },
+
+  // Get available schedules for a dealership
+  getAvailableSchedules: async (dealershipId: number): Promise<{ data: ShiftSchedule[] }> => {
+    const response = await apiClient.get<{ data: ShiftSchedule[] }>('/shifts/available-schedules', {
+      params: { dealership_id: dealershipId },
+    });
+    return response.data;
   },
 };

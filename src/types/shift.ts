@@ -62,6 +62,15 @@ export interface CreateShiftRequest {
   user_id: number;
   dealership_id: number;
   opening_photo: File;
+  shift_schedule_id?: number;
+}
+
+// 409 response when schedule is ambiguous
+export interface ScheduleAmbiguousError {
+  success: false;
+  message: string;
+  error_code: 'schedule_ambiguous';
+  candidates: ShiftSchedule[];
 }
 
 export interface UpdateShiftRequest {

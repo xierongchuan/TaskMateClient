@@ -4,7 +4,7 @@ React SPA для TaskMate. Общие правила — в [../GEMINI.md](../GE
 
 ## Стек
 
-React 19 + TypeScript 5.9 + Vite 7 + Tailwind 3.4 + TanStack Query 5 + Zustand 5 + react-hook-form 7 + date-fns 4 + Capacitor 8.
+React 19 + TypeScript 5.9 + Vite 7 + Tailwind 3.4 + TanStack Query 5 + Zustand 5 + react-hook-form 7 + date-fns 4.
 
 ## Структура
 
@@ -12,26 +12,35 @@ React 19 + TypeScript 5.9 + Vite 7 + Tailwind 3.4 + TanStack Query 5 + Zustand 5
 src/
 ├── api/            # 15 модулей (client.ts — Axios instance)
 ├── components/
-│   ├── ui/         # UI Kit: Button, Card, Modal, Badge, Input, Select...
+│   ├── ui/         # UI Kit: Button, Card, Modal, Badge, Input...
 │   ├── common/     # DealershipSelector, StatusBadge, UserSelector...
 │   ├── layout/     # Layout, Sidebar, WorkspaceSwitcher
-│   ├── tasks/      # TaskModal, TaskDetailsModal, VerificationPanel, ProofViewer
-│   └── [domain]/   # generators, shifts, users, dealerships, settings, reports
+│   ├── tasks/      # TaskModal, TaskDetailsModal, VerificationPanel
+│   └── [domain]/   # generators, shifts, users, dealerships, settings
 ├── pages/          # 17 страниц-роутов
-├── hooks/          # 13 хуков (usePermissions, useWorkspace, useSettings...)
+├── hooks/          # usePermissions, useWorkspace, useSettings...
 ├── stores/         # Zustand: authStore, workspaceStore, sidebarStore
-├── types/          # 12 файлов TypeScript-типов
-├── utils/          # dateTime, errorHandling, rateLimitManager...
+├── types/          # TypeScript-типы
+├── utils/          # dateTime, errorHandling, rateLimitManager
 └── context/        # ThemeContext (light/dark/system + accent color)
 ```
 
-## Conventions
+## Конвенции
 
 ### State management — два слоя
 
-- **Zustand** — клиентское состояние (auth, workspace, sidebar). Persist в localStorage.
-- **TanStack Query** — серверные данные. Каждый запрос использует `dealershipId` в queryKey.
+**Zustand** — клиентское состояние (auth, workspace, sidebar). Persist в localStorage.
+```typescript
+// Пример: authStore
+export const useAuthStore = create<AuthState>(
+  persist((set) => ({
+    user: null,
+    login: (user) => set({ user }),
+  }), { name: 'auth-store' })
+);
+```
 
+**TanStack Query** — серверные данные. Всегда используй `dealershipId` в queryKey.
 ```typescript
 // ПРАВИЛЬНО: placeholderData предотвращает мигание при смене фильтров
 useQuery({
@@ -40,56 +49,106 @@ useQuery({
   placeholderData: (prev) => prev,
 });
 
-// НЕПРАВИЛЬНО: без placeholderData — UI мигает при каждом запросе
+// НЕПРАВИЛЬНО: без placeholderData — UI мигает
 useQuery({ queryKey: ['tasks'], queryFn: tasksApi.getAll });
 ```
 
-### Права доступа
+### Права доступа (usePermissions)
 
 ```typescript
-// Всегда через usePermissions(), НЕ проверять role напрямую
+// ПРАВИЛЬНО: всегда используй usePermissions()
 const { canManageTasks, canCreateUsers, isOwner } = usePermissions();
-
-// Скрывать UI-элементы, не отключать
 {canManageTasks && <Button onClick={handleCreate}>Создать</Button>}
-```
 
-### Multi-tenant
-
-```typescript
-// useWorkspace() — единственный источник dealershipId
-const { dealershipId } = useWorkspace();
-// Employee: только свой. Manager: назначенные. Owner: все или конкретный.
+// НЕПРАВИЛЬНО: проверка role напрямую
+if (user.role === 'owner') { ... }
 ```
 
 ### API модули
 
 ```typescript
 // Паттерн: объект с методами, типизированный ответ
-export const exampleApi = {
-  getAll: async (params?: Filters): Promise<PaginatedResponse<Data>> => {
-    const response = await apiClient.get('/endpoint', { params });
+export const tasksApi = {
+  getAll: async (params?: TaskFilters): Promise<PaginatedResponse<Task>> => {
+    const response = await apiClient.get('/tasks', { params });
+    return response.data;
+  },
+  create: async (data: CreateTaskPayload): Promise<ApiResponse<Task>> => {
+    const response = await apiClient.post('/tasks', data);
     return response.data;
   },
 };
+
+// Использование ТОЛЬКО через эти модули, не через axios напрямую
 ```
 
-### Даты
+### Даты (dateTime.ts)
 
 ```typescript
-import { formatDateTime, toUtcIso, localInputToUtc } from '@/utils/dateTime';
-// Backend → UTC ISO с Z: "2024-01-15T10:30:00Z"
-// Отображение: formatDateTime(date) → "15 янв 2024, 15:30"
-// Отправка: toUtcIso(localDate) → "2024-01-15T10:30:00Z"
+import { formatDateTime, toUtcIso, parseUtcDate } from '@/utils/dateTime';
+
+// Backend → UTC ISO: "2024-01-15T10:30:00Z"
+const date = parseUtcDate("2024-01-15T10:30:00Z");
+
+// Отображение: локальный timezone
+formatDateTime(date);  // "15 янв 2024, 15:30"
+
+// Отправка на backend
+toUtcIso(localDate);  // "2024-01-15T10:30:00Z"
 ```
 
-### Modal CRUD
+### Multi-tenant (useWorkspace)
 
 ```typescript
-// Паттерн: selectedItem=null → создание, object → редактирование
-const [selectedItem, setSelectedItem] = useState<Item | null>(null);
-// Модалка получает item prop и определяет режим
+// useWorkspace() — единственный источник dealershipId
+const { dealershipId } = useWorkspace();
+
+// Employee: только свой. Manager: назначенные. Owner: все или конкретный.
+// Это проверяется на backend через TaskPolicy::view()
 ```
+
+## Команды (специфичные для frontend)
+
+```bash
+# Все команды через контейнеры (npm НЕ на хосте)
+podman run --rm -v ./TaskMateClient:/app:z -w /app docker.io/library/node:22-alpine npm run dev      # Dev server
+podman run --rm -v ./TaskMateClient:/app:z -w /app docker.io/library/node:22-alpine npm run build    # Production build
+podman run --rm -v ./TaskMateClient:/app:z -w /app docker.io/library/node:22-alpine npm run lint     # ESLint
+
+# E2E тесты (Playwright)
+podman run --rm --network host -v ./TaskMateClient:/app:z -w /app mcr.microsoft.com/playwright:v1.58.0-noble npx playwright test          # Все тесты
+podman run --rm --network host -v ./TaskMateClient:/app:z -w /app mcr.microsoft.com/playwright:v1.58.0-noble npx playwright test --list    # Список без запуска
+podman run --rm --network host -v ./TaskMateClient:/app:z -w /app mcr.microsoft.com/playwright:v1.58.0-noble npx playwright test dashboard # Конкретный файл
+```
+
+## E2E тесты (Playwright)
+
+### Структура
+
+```
+tests/
+├── setup/              # Инфраструктура аутентификации
+│   ├── auth.setup.ts   # Логин и сохранение storageState для 4 ролей
+│   └── helpers.ts      # Экспорт путей к storageState (AUTH_DIR, *_STATE)
+├── auth/               # Тесты логина (без storageState)
+│   └── login.spec.ts
+├── pages/              # Тесты страниц от admin (owner)
+│   ├── dashboard.spec.ts
+│   ├── tasks.spec.ts
+│   └── ...             # 16 файлов — по одному на страницу
+├── roles/              # Ролевые проверки доступа
+│   ├── navigation.role-check.spec.ts
+│   ├── employees.role-check.spec.ts
+│   └── ...             # 5 файлов — *.role-*.spec.ts
+└── .auth/              # Сгенерированные storageState (gitignored)
+```
+
+### Конвенции
+
+- **Именование:** `pages/` — `<страница>.spec.ts`, `roles/` — `<страница>.role-<роль|check>.spec.ts`
+- **Аутентификация:** `setup/auth.setup.ts` создаёт storageState для 4 ролей. Проект `chromium` использует admin. Ролевые тесты импортируют `*_STATE` из `../setup/helpers`
+- **Waits:** `waitForLoadState('networkidle')` после навигации, `toBeVisible({ timeout })` для элементов
+- **Локаторы:** предпочитай `getByRole()`, `getByText()`, `locator('a[href="..."]')`. Избегай хрупких CSS-селекторов
 
 ## Запрещено
 
@@ -98,19 +157,10 @@ const [selectedItem, setSelectedItem] = useState<Item | null>(null);
 - `keepPreviousData` (устарело) — используй `placeholderData: (prev) => prev`
 - Обращаться к API напрямую через axios — используй модули из `src/api/`
 - Отображать даты без конвертации из UTC — используй `dateTime.ts` утилиты
+- Обращаться к dealershipId напрямую из `useAuthStore` — используй `useWorkspace()`
 
 ## Темы и стили
 
-- Tailwind CSS, dark mode через `class` strategy
+- Tailwind CSS + dark mode (`class` strategy)
 - Primary: blue-600, accent через CSS variables
-- ThemeContext: `useTheme()` → `{ theme, accentColor }`
-
-## Команды
-
-```bash
-npm run dev       # Dev server
-npm run build     # Production (tsc -b + vite build)
-npm run lint      # ESLint
-npm run cap:sync  # Синхронизация Capacitor (Android)
-npm run cap:build # Сборка + Синхронизация Capacitor
-```
+- `useTheme()` → `{ theme, accentColor, toggleTheme }`

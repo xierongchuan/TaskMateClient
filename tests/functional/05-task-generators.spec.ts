@@ -61,13 +61,8 @@ test.describe.serial('05 — Task Generators: CRUD генераторов зад
     const descInput = page.getByLabel('Описание');
     await descInput.fill('Тестовое описание ежедневного генератора');
 
-    // Автосалон — выбираем через select рядом с текстом "Автосалон"
-    const dealershipSelect = page
-      .locator('label')
-      .filter({ hasText: 'Автосалон' })
-      .locator('..')
-      .locator('select')
-      .first();
+    const dealershipBlock = page.getByText('Автосалон *', { exact: true }).locator('..');
+    const dealershipSelect = dealershipBlock.locator('select');
     await dealershipSelect.selectOption({ label: 'Автосалон Тест-1' });
 
     // Ждём загрузки исполнителей после выбора автосалона
@@ -230,13 +225,8 @@ test.describe.serial('05 — Task Generators: CRUD генераторов зад
     const nameInput = page.getByLabel('Название *');
     await nameInput.fill('Еженедельный генератор тест');
 
-    // Автосалон
-    const dealershipSelect = page
-      .locator('label')
-      .filter({ hasText: 'Автосалон' })
-      .locator('..')
-      .locator('select')
-      .first();
+    const dealershipBlock = page.getByText('Автосалон *', { exact: true }).locator('..');
+    const dealershipSelect = dealershipBlock.locator('select');
     await dealershipSelect.selectOption({ label: 'Автосалон Тест-1' });
 
     await page.waitForTimeout(1000);

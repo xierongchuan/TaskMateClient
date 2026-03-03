@@ -21,8 +21,7 @@ test.describe.serial('03 — Tasks: CRUD задач', () => {
     // Ждём завершения загрузки данных
     await page.waitForTimeout(1500);
 
-    // Должен отобразиться пустой список или соответствующее сообщение
-    await expect(page.getByText(/задачи не найдены|создайте первую/i)).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText(/задачи не найдены|создайте первую/i).first()).toBeVisible({ timeout: 10000 });
   });
 
   // ─── 2. Создание notification задачи ────────────────────────────────────────
@@ -43,7 +42,7 @@ test.describe.serial('03 — Tasks: CRUD задач', () => {
     await dialog.getByLabel(/тип ответа/i).selectOption({ label: 'Уведомление' });
 
     // Выбираем автосалон
-    const dealershipBlock = dialog.locator('div').filter({ hasText: /автосалон \*/i }).last();
+    const dealershipBlock = dialog.getByText('Автосалон *', { exact: true }).locator('..');
     const dealershipSelect = dealershipBlock.locator('select');
     await dealershipSelect.selectOption({ label: 'Автосалон Тест-1' });
 
@@ -93,7 +92,7 @@ test.describe.serial('03 — Tasks: CRUD задач', () => {
 
     await dialog.getByLabel(/тип ответа/i).selectOption({ label: 'На выполнение' });
 
-    const dealershipBlock = dialog.locator('div').filter({ hasText: /автосалон \*/i }).last();
+    const dealershipBlock = dialog.getByText('Автосалон *', { exact: true }).locator('..');
     const dealershipSelect = dealershipBlock.locator('select');
     await dealershipSelect.selectOption({ label: 'Автосалон Тест-1' });
 
@@ -133,7 +132,7 @@ test.describe.serial('03 — Tasks: CRUD задач', () => {
 
     await dialog.getByLabel(/тип ответа/i).selectOption({ label: 'С доказательством' });
 
-    const dealershipBlock = dialog.locator('div').filter({ hasText: /автосалон \*/i }).last();
+    const dealershipBlock = dialog.getByText('Автосалон *', { exact: true }).locator('..');
     const dealershipSelect = dealershipBlock.locator('select');
     await dealershipSelect.selectOption({ label: 'Автосалон Тест-1' });
 
@@ -173,7 +172,7 @@ test.describe.serial('03 — Tasks: CRUD задач', () => {
 
     await dialog.getByLabel(/тип ответа/i).selectOption({ label: 'На выполнение' });
 
-    const dealershipBlock = dialog.locator('div').filter({ hasText: /автосалон \*/i }).last();
+    const dealershipBlock = dialog.getByText('Автосалон *', { exact: true }).locator('..');
     const dealershipSelect = dealershipBlock.locator('select');
     await dealershipSelect.selectOption({ label: 'Автосалон Тест-1' });
 
@@ -210,7 +209,7 @@ test.describe.serial('03 — Tasks: CRUD задач', () => {
     await expect(dialog).toBeVisible({ timeout: 5000 });
 
     // Выбираем автосалон, но не заполняем название
-    const dealershipBlock = dialog.locator('div').filter({ hasText: /автосалон \*/i }).last();
+    const dealershipBlock = dialog.getByText('Автосалон *', { exact: true }).locator('..');
     const dealershipSelect = dealershipBlock.locator('select');
     await dealershipSelect.selectOption({ label: 'Автосалон Тест-1' });
 
@@ -405,7 +404,7 @@ test.describe.serial('03 — Tasks: CRUD задач', () => {
 
     await dialog.getByLabel(/приоритет/i).selectOption({ label: 'Низкий' });
 
-    const dealershipBlock = dialog.locator('div').filter({ hasText: /автосалон \*/i }).last();
+    const dealershipBlock = dialog.getByText('Автосалон *', { exact: true }).locator('..');
     const dealershipSelect = dealershipBlock.locator('select');
     await dealershipSelect.selectOption({ label: 'Автосалон Тест-1' });
 

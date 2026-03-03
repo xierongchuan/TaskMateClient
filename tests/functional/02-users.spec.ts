@@ -67,7 +67,7 @@ test.describe.serial('02 — Пользователи (/employees)', () => {
     await dialog.getByLabel('Телефон *').fill('+79001111111');
 
     // Выбираем роль «Управляющий»
-    await dialog.getByLabel('Роль *').selectOption('manager');
+    await dialog.getByLabel('Роль *', { exact: true }).selectOption('manager');
 
     // После выбора роли «Управляющий» должны появиться чекбоксы для автосалонов
     await expect(dialog.getByText('Выберите салоны для управления:')).toBeVisible({ timeout: 5000 });
@@ -112,7 +112,7 @@ test.describe.serial('02 — Пользователи (/employees)', () => {
     await dialog.getByLabel('Телефон *').fill('+79002222222');
 
     // Роль «Сотрудник» — выбрана по умолчанию, но задаём явно для надёжности
-    await dialog.getByLabel('Роль *').selectOption('employee');
+    await dialog.getByLabel('Роль *', { exact: true }).selectOption('employee');
 
     // DealershipSelector — нативный <select> внутри диалога
     // Берём последний select в диалоге (после select роли)
@@ -148,7 +148,7 @@ test.describe.serial('02 — Пользователи (/employees)', () => {
     await dialog.getByLabel('Пароль *').fill('password');
     await dialog.getByLabel('Полное имя *').fill('Сотрудник Второй');
     await dialog.getByLabel('Телефон *').fill('+79003333333');
-    await dialog.getByLabel('Роль *').selectOption('employee');
+    await dialog.getByLabel('Роль *', { exact: true }).selectOption('employee');
     await dialog.locator('select').last().selectOption({ label: 'Автосалон Тест-1' });
 
     await dialog.getByRole('button', { name: 'Создать' }).click();
@@ -181,7 +181,7 @@ test.describe.serial('02 — Пользователи (/employees)', () => {
     await dialog.getByLabel('Пароль *').fill('password');
     await dialog.getByLabel('Полное имя *').fill('Наблюдатель Тестовый');
     await dialog.getByLabel('Телефон *').fill('+79004444444');
-    await dialog.getByLabel('Роль *').selectOption('observer');
+    await dialog.getByLabel('Роль *', { exact: true }).selectOption('observer');
     await dialog.locator('select').last().selectOption({ label: 'Автосалон Тест-1' });
 
     await dialog.getByRole('button', { name: 'Создать' }).click();
@@ -208,7 +208,7 @@ test.describe.serial('02 — Пользователи (/employees)', () => {
     await dialog.getByLabel('Пароль *').fill('password');
     await dialog.getByLabel('Полное имя *').fill('Дубль Логина');
     await dialog.getByLabel('Телефон *').fill('+79009999999');
-    await dialog.getByLabel('Роль *').selectOption('employee');
+    await dialog.getByLabel('Роль *', { exact: true }).selectOption('employee');
 
     await dialog.getByRole('button', { name: 'Создать' }).click();
 

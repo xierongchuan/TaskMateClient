@@ -117,7 +117,7 @@ export const DealershipForm: React.FC<DealershipFormProps> = ({
   }));
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6" noValidate>
       {errors.general && (
         <div className="rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4">
           <p className="text-sm text-red-800 dark:text-red-200">{errors.general}</p>
@@ -132,7 +132,6 @@ export const DealershipForm: React.FC<DealershipFormProps> = ({
           value={formData.name}
           onChange={(e) => handleInputChange('name', e.target.value)}
           required
-          minLength={2}
           placeholder="Например: Автомир Premium"
           icon={<BuildingOfficeIcon />}
           error={errors.name}

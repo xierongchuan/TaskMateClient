@@ -56,7 +56,7 @@ test.describe.serial('Settings — настройки системы', () => {
 
   // ─── 3. Вкладка «Интерфейс» — смена темы ─────────────────────────────────
 
-  test('вкладка «Интерфейс» — переключение темы на «Тёмная» и обратно', async ({
+  test('вкладка «Интерфейс» — переключение темы на «Темная» и обратно', async ({
     page,
   }) => {
     await page.getByRole('button', { name: 'Интерфейс' }).click();
@@ -70,9 +70,8 @@ test.describe.serial('Settings — настройки системы', () => {
     ).toBeVisible({ timeout: 10000 });
 
     // Кнопка «Тёмная» тема
-    const darkButton = page
-      .getByRole('button', { name: 'Тёмная' })
-      .or(page.locator('button').filter({ hasText: /Тёмная/i }))
+    const darkButton = page.getByRole('button', { name: 'Темная' })
+      .or(page.locator('button').filter({ hasText: /Темная/i }))
       .first();
 
     await expect(darkButton).toBeVisible({ timeout: 5000 });

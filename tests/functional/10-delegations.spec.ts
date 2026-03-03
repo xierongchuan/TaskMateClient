@@ -41,10 +41,7 @@ test.describe.serial('Delegations — делегирование задач', ()
     await dialog.getByLabel(/тип ответа/i).selectOption({ label: 'На выполнение' });
 
     // Автосалон
-    const dealershipBlock = dialog
-      .locator('div')
-      .filter({ hasText: /автосалон \*/i })
-      .last();
+    const dealershipBlock = dialog.getByText('Автосалон *', { exact: true }).locator('..');
     await dealershipBlock.locator('select').selectOption({ label: 'Автосалон Тест-1' });
 
     // Даты (дедлайн — через 2 дня)
@@ -289,10 +286,7 @@ test.describe.serial('Delegations — делегирование задач', ()
       .getByLabel(/тип ответа/i)
       .selectOption({ label: 'На выполнение' });
 
-    const dealershipBlock = createDialog
-      .locator('div')
-      .filter({ hasText: /автосалон \*/i })
-      .last();
+    const dealershipBlock = createDialog.getByText('Автосалон *', { exact: true }).locator('..');
     await dealershipBlock.locator('select').selectOption({ label: 'Автосалон Тест-1' });
 
     await createDialog.getByText('Сотрудник Первый').waitFor({ timeout: 5000 });

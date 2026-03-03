@@ -21,7 +21,7 @@ test.describe.serial('07 — Links: CRUD ссылок', () => {
   test('пустое состояние — нет ссылок или пустой список', async ({
     page,
   }) => {
-    const addButton = page.getByRole('button', { name: 'Добавить ссылку' });
+    const addButton = page.getByRole('button', { name: 'Добавить ссылку' }).first();
     await expect(addButton).toBeVisible({ timeout: 10000 });
 
     // Может быть явное сообщение «Нет ссылок» или пустой список
@@ -38,7 +38,7 @@ test.describe.serial('07 — Links: CRUD ссылок', () => {
   test('создание ссылки «Google Документы» — появляется в списке', async ({
     page,
   }) => {
-    await page.getByRole('button', { name: 'Добавить ссылку' }).click();
+    await page.getByRole('button', { name: 'Добавить ссылку' }).first().click();
 
     const dialog = page.getByRole('dialog');
     await expect(dialog).toBeVisible({ timeout: 5000 });
@@ -88,7 +88,7 @@ test.describe.serial('07 — Links: CRUD ссылок', () => {
   test('создание ссылки «CRM Система» — появляется в списке', async ({
     page,
   }) => {
-    await page.getByRole('button', { name: 'Добавить ссылку' }).click();
+    await page.getByRole('button', { name: 'Добавить ссылку' }).first().click();
 
     const dialog = page.getByRole('dialog');
     await expect(dialog).toBeVisible({ timeout: 5000 });
@@ -278,7 +278,7 @@ test.describe.serial('07 — Links: CRUD ссылок', () => {
   test('валидация: без названия — модалка остаётся открытой', async ({
     page,
   }) => {
-    await page.getByRole('button', { name: 'Добавить ссылку' }).click();
+    await page.getByRole('button', { name: 'Добавить ссылку' }).first().click();
 
     const dialog = page.getByRole('dialog');
     await expect(dialog).toBeVisible({ timeout: 5000 });
@@ -300,7 +300,7 @@ test.describe.serial('07 — Links: CRUD ссылок', () => {
   test('валидация: некорректный URL — ошибка валидации', async ({
     page,
   }) => {
-    await page.getByRole('button', { name: 'Добавить ссылку' }).click();
+    await page.getByRole('button', { name: 'Добавить ссылку' }).first().click();
 
     const dialog = page.getByRole('dialog');
     await expect(dialog).toBeVisible({ timeout: 5000 });
@@ -349,7 +349,7 @@ test.describe.serial('07 — Links: CRUD ссылок', () => {
 
       // Кнопка «Добавить ссылку» НЕ должна быть видна для сотрудника
       await expect(
-        empPage.getByRole('button', { name: 'Добавить ссылку' }),
+        empPage.getByRole('button', { name: 'Добавить ссылку' }).first(),
       ).not.toBeVisible({ timeout: 5000 });
     } finally {
       await ctx.close();

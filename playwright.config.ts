@@ -51,5 +51,25 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
       dependencies: ['setup'],
     },
+
+    // 5. Functional setup — логин admin для функциональных тестов
+    {
+      name: 'functional-setup',
+      testDir: './tests/functional/setup',
+      testMatch: /functional\.setup\.ts/,
+    },
+
+    // 6. Функциональные тесты — строго последовательно
+    {
+      name: 'functional',
+      testDir: './tests/functional',
+      testMatch: /\d{2}-.*\.spec\.ts/,
+      fullyParallel: false,
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: path.join(AUTH_DIR, 'func-admin.json'),
+      },
+      dependencies: ['functional-setup'],
+    },
   ],
 });

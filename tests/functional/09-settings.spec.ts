@@ -81,16 +81,17 @@ test.describe.serial('Settings — настройки системы', () => {
     await page.waitForTimeout(500);
 
     // Проверяем что кнопка отображает выбранное состояние:
-    // aria-pressed, class с "active"/"selected" или визуальный индикатор
+    // используемые классы: bg-accent-50, border-accent-500, text-accent-700 (светлая тема)
+    // или dark:bg-gray-700, dark:border-accent-500, dark:text-accent-400 (темная тема)
     const isDarkSelected =
       (await darkButton.getAttribute('aria-pressed')) === 'true' ||
       (await darkButton.getAttribute('data-active')) === 'true' ||
       (await darkButton.evaluate((el) =>
         el.className.includes('active') ||
         el.className.includes('selected') ||
-        el.className.includes('ring') ||
-        el.className.includes('border-blue') ||
-        el.className.includes('bg-blue'),
+        el.className.includes('accent-50') ||
+        el.className.includes('accent-500') ||
+        el.className.includes('accent-700'),
       ));
     expect(isDarkSelected).toBeTruthy();
 

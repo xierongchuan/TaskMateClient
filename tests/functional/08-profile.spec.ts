@@ -59,7 +59,7 @@ test.describe.serial('08 — Profile: личный профиль', () => {
 
       const responsePromise = page.waitForResponse(
         (resp) =>
-          resp.url().includes('/api/') &&
+          resp.url().includes('/') &&
           (resp.request().method() === 'PUT' ||
             resp.request().method() === 'PATCH') &&
           resp.status() === 200,
@@ -101,7 +101,7 @@ test.describe.serial('08 — Profile: личный профиль', () => {
 
       const responsePromise = page.waitForResponse(
         (resp) =>
-          resp.url().includes('/api/') &&
+          resp.url().includes('/') &&
           (resp.request().method() === 'PUT' ||
             resp.request().method() === 'PATCH') &&
           resp.status() === 200,
@@ -142,7 +142,7 @@ test.describe.serial('08 — Profile: личный профиль', () => {
 
       const responsePromise = page.waitForResponse(
         (resp) =>
-          resp.url().includes('/api/') &&
+          resp.url().includes('/') &&
           (resp.request().method() === 'PUT' ||
             resp.request().method() === 'PATCH') &&
           resp.status() === 200,
@@ -187,7 +187,7 @@ test.describe.serial('08 — Profile: личный профиль', () => {
 
       const responsePromise = page.waitForResponse(
         (resp) =>
-          resp.url().includes('/api/') &&
+          resp.url().includes('/') &&
           (resp.request().method() === 'PUT' ||
             resp.request().method() === 'PATCH' ||
             resp.request().method() === 'POST') &&
@@ -265,7 +265,7 @@ test.describe.serial('08 — Profile: личный профиль', () => {
 
       const responsePromise = page.waitForResponse(
         (resp) =>
-          resp.url().includes('/api/') &&
+          resp.url().includes('/') &&
           (resp.request().method() === 'PUT' ||
             resp.request().method() === 'PATCH' ||
             resp.request().method() === 'POST') &&

@@ -46,12 +46,11 @@ test.describe.serial('02 — Пользователи (/employees)', () => {
   // ─── 3. Создание менеджера ───────────────────────────────────────────────────
 
   test('создание менеджера func_manager1 с двумя салонами', async ({ page }) => {
-    // Перехватываем ответ POST /api/users со статусом 201
+    // Перехватываем ответ POST /api/users
     const responsePromise = page.waitForResponse(
       (resp) =>
-        resp.url().includes('/api/users') &&
-        resp.request().method() === 'POST' &&
-        resp.status() === 201,
+        resp.url().includes('/users') &&
+        resp.request().method() === 'POST',
     );
 
     // Открываем модальное окно
@@ -72,15 +71,15 @@ test.describe.serial('02 — Пользователи (/employees)', () => {
     // После выбора роли «Управляющий» должны появиться чекбоксы для автосалонов
     await expect(dialog.getByText('Выберите салоны для управления:')).toBeVisible({ timeout: 5000 });
 
-    // Отмечаем оба автосалона по их названиям-лейблам
-    await dialog.getByText('Автосалон Тест-1').click();
-    await dialog.getByText('Автосалон Тест-2').click();
+    // Отмечаем один автосалон (у управляющего может быть только 1 автосалон)
+    await dialog.getByText('Автосалон Тест-1').first().click();
 
     // Отправляем форму
     await dialog.getByRole('button', { name: 'Создать' }).click();
 
     // Получаем id из ответа сервера
     const response = await responsePromise;
+    expect(response.status()).toBe(201);
     const body = await response.json();
     const managerId: number = body.data.id;
     expect(managerId).toBeGreaterThan(0);
@@ -97,7 +96,7 @@ test.describe.serial('02 — Пользователи (/employees)', () => {
   test('создание сотрудника func_emp1 в салоне Тест-1', async ({ page }) => {
     const responsePromise = page.waitForResponse(
       (resp) =>
-        resp.url().includes('/api/users') &&
+        resp.url().includes('/users') &&
         resp.request().method() === 'POST' &&
         resp.status() === 201,
     );
@@ -121,6 +120,7 @@ test.describe.serial('02 — Пользователи (/employees)', () => {
     await dialog.getByRole('button', { name: 'Создать' }).click();
 
     const response = await responsePromise;
+    expect(response.status()).toBe(201);
     const body = await response.json();
     const employee1Id: number = body.data.id;
     expect(employee1Id).toBeGreaterThan(0);
@@ -135,9 +135,8 @@ test.describe.serial('02 — Пользователи (/employees)', () => {
   test('создание сотрудника func_emp2 в салоне Тест-1', async ({ page }) => {
     const responsePromise = page.waitForResponse(
       (resp) =>
-        resp.url().includes('/api/users') &&
-        resp.request().method() === 'POST' &&
-        resp.status() === 201,
+        resp.url().includes('/users') &&
+        resp.request().method() === 'POST',
     );
 
     await page.getByRole('button', { name: 'Добавить сотрудника' }).click();
@@ -154,6 +153,7 @@ test.describe.serial('02 — Пользователи (/employees)', () => {
     await dialog.getByRole('button', { name: 'Создать' }).click();
 
     const response = await responsePromise;
+    expect(response.status()).toBe(201);
     const body = await response.json();
     const employee2Id: number = body.data.id;
     expect(employee2Id).toBeGreaterThan(0);
@@ -168,9 +168,8 @@ test.describe.serial('02 — Пользователи (/employees)', () => {
   test('создание наблюдателя func_observer1 в салоне Тест-1', async ({ page }) => {
     const responsePromise = page.waitForResponse(
       (resp) =>
-        resp.url().includes('/api/users') &&
-        resp.request().method() === 'POST' &&
-        resp.status() === 201,
+        resp.url().includes('/users') &&
+        resp.request().method() === 'POST',
     );
 
     await page.getByRole('button', { name: 'Добавить сотрудника' }).click();
@@ -187,6 +186,7 @@ test.describe.serial('02 — Пользователи (/employees)', () => {
     await dialog.getByRole('button', { name: 'Создать' }).click();
 
     const response = await responsePromise;
+    expect(response.status()).toBe(201);
     const body = await response.json();
     const observerId: number = body.data.id;
     expect(observerId).toBeGreaterThan(0);

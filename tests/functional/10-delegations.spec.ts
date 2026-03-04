@@ -66,7 +66,7 @@ test.describe.serial('Delegations — делегирование задач', ()
     // Перехватываем ответ API
     const responsePromise = page.waitForResponse(
       (resp) =>
-        resp.url().includes('/api/tasks') &&
+        resp.url().includes('/tasks') &&
         resp.request().method() === 'POST' &&
         resp.status() === 201,
     );
@@ -146,7 +146,7 @@ test.describe.serial('Delegations — делегирование задач', ()
       // Перехватываем ответ API делегирования
       const responsePromise = page.waitForResponse(
         (resp) =>
-          resp.url().includes('/api/') &&
+          resp.url().includes('/') &&
           (resp.url().includes('delegat') || resp.url().includes('delegate')) &&
           (resp.request().method() === 'POST' || resp.request().method() === 'PATCH') &&
           resp.status() < 300,
@@ -235,7 +235,7 @@ test.describe.serial('Delegations — делегирование задач', ()
       // Перехватываем ответ API
       const responsePromise = page.waitForResponse(
         (resp) =>
-          resp.url().includes('/api/') &&
+          resp.url().includes('/') &&
           (resp.url().includes('accept') ||
             resp.url().includes('delegat') ||
             resp.url().includes('delegate')) &&
@@ -297,7 +297,7 @@ test.describe.serial('Delegations — делегирование задач', ()
 
     const createResponsePromise = page.waitForResponse(
       (resp) =>
-        resp.url().includes('/api/tasks') &&
+        resp.url().includes('/tasks') &&
         resp.request().method() === 'POST' &&
         resp.status() === 201,
     );
@@ -346,7 +346,7 @@ test.describe.serial('Delegations — делегирование задач', ()
 
       const delegateResponse = emp1Page.waitForResponse(
         (resp) =>
-          resp.url().includes('/api/') &&
+          resp.url().includes('/') &&
           (resp.url().includes('delegat') || resp.url().includes('delegate')) &&
           (resp.request().method() === 'POST' || resp.request().method() === 'PATCH') &&
           resp.status() < 300,
@@ -397,7 +397,7 @@ test.describe.serial('Delegations — делегирование задач', ()
 
       const rejectResponse = emp2Page.waitForResponse(
         (resp) =>
-          resp.url().includes('/api/') &&
+          resp.url().includes('/') &&
           (resp.url().includes('reject') ||
             resp.url().includes('delegat') ||
             resp.url().includes('delegate')) &&

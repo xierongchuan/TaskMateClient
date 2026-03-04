@@ -105,7 +105,7 @@ test.describe.serial('06 — Shifts: управление сменами', () =>
 
       const responsePromise = empPage.waitForResponse(
         (resp) =>
-          resp.url().includes('/api/shifts') &&
+          resp.url().includes('/shifts') &&
           resp.request().method() === 'POST' &&
           (resp.status() === 200 || resp.status() === 201),
       );
@@ -170,7 +170,7 @@ test.describe.serial('06 — Shifts: управление сменами', () =>
 
       const responsePromise = empPage.waitForResponse(
         (resp) =>
-          resp.url().includes('/api/shifts') &&
+          resp.url().includes('/shifts') &&
           (resp.request().method() === 'PUT' ||
             resp.request().method() === 'PATCH' ||
             resp.request().method() === 'POST') &&

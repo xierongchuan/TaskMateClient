@@ -60,7 +60,7 @@ test.describe.serial('03 — Tasks: CRUD задач', () => {
     // Перехватываем ответ API
     const responsePromise = page.waitForResponse(
       (resp) =>
-        resp.url().includes('/api/tasks') &&
+        resp.url().includes('/tasks') &&
         resp.request().method() === 'POST' &&
         resp.status() === 201,
     );
@@ -101,7 +101,7 @@ test.describe.serial('03 — Tasks: CRUD задач', () => {
 
     const responsePromise = page.waitForResponse(
       (resp) =>
-        resp.url().includes('/api/tasks') &&
+        resp.url().includes('/tasks') &&
         resp.request().method() === 'POST' &&
         resp.status() === 201,
     );
@@ -141,7 +141,7 @@ test.describe.serial('03 — Tasks: CRUD задач', () => {
 
     const responsePromise = page.waitForResponse(
       (resp) =>
-        resp.url().includes('/api/tasks') &&
+        resp.url().includes('/tasks') &&
         resp.request().method() === 'POST' &&
         resp.status() === 201,
     );
@@ -183,7 +183,7 @@ test.describe.serial('03 — Tasks: CRUD задач', () => {
 
     const responsePromise = page.waitForResponse(
       (resp) =>
-        resp.url().includes('/api/tasks') &&
+        resp.url().includes('/tasks') &&
         resp.request().method() === 'POST' &&
         resp.status() === 201,
     );
@@ -413,7 +413,7 @@ test.describe.serial('03 — Tasks: CRUD задач', () => {
 
     const createResponsePromise = page.waitForResponse(
       (resp) =>
-        resp.url().includes('/api/tasks') &&
+        resp.url().includes('/tasks') &&
         resp.request().method() === 'POST' &&
         resp.status() === 201,
     );
@@ -446,7 +446,7 @@ test.describe.serial('03 — Tasks: CRUD задач', () => {
       if (hasDeleteButton) {
         const deleteResponsePromise = page.waitForResponse(
           (resp) =>
-            resp.url().includes('/api/tasks') &&
+            resp.url().includes('/tasks') &&
             resp.request().method() === 'DELETE' &&
             resp.status() === 200,
         );

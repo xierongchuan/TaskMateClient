@@ -64,7 +64,7 @@ test.describe.serial('07 — Links: CRUD ссылок', () => {
     // Перехватываем ответ POST
     const responsePromise = page.waitForResponse(
       (resp) =>
-        resp.url().includes('/api/links') &&
+        resp.url().includes('/links') &&
         resp.request().method() === 'POST' &&
         resp.status() === 201,
     );
@@ -106,7 +106,7 @@ test.describe.serial('07 — Links: CRUD ссылок', () => {
     // Перехватываем ответ POST
     const responsePromise = page.waitForResponse(
       (resp) =>
-        resp.url().includes('/api/links') &&
+        resp.url().includes('/links') &&
         resp.request().method() === 'POST' &&
         resp.status() === 201,
     );
@@ -220,7 +220,7 @@ test.describe.serial('07 — Links: CRUD ссылок', () => {
     // Перехватываем ответ PUT/PATCH
     const responsePromise = page.waitForResponse(
       (resp) =>
-        resp.url().includes('/api/links') &&
+        resp.url().includes('/links') &&
         (resp.request().method() === 'PUT' ||
           resp.request().method() === 'PATCH') &&
         resp.status() === 200,
@@ -261,7 +261,7 @@ test.describe.serial('07 — Links: CRUD ссылок', () => {
 
     const responsePromise2 = page.waitForResponse(
       (resp) =>
-        resp.url().includes('/api/links') &&
+        resp.url().includes('/links') &&
         (resp.request().method() === 'PUT' ||
           resp.request().method() === 'PATCH') &&
         resp.status() === 200,

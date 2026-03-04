@@ -78,14 +78,14 @@ test.describe.serial('01 — Dealerships: CRUD автосалонов', () => {
     // Перехватываем ответ API
     const responsePromise = page.waitForResponse(
       (resp) =>
-        resp.url().includes('/api/dealerships') &&
-        resp.request().method() === 'POST' &&
-        resp.status() === 201
+        resp.url().includes('/dealerships') &&
+        resp.request().method() === 'POST',
     );
 
     await page.getByRole('button', { name: 'Создать автосалон', exact: true }).last().click();
 
     const response = await responsePromise;
+    expect(response.status()).toBe(201);
     const body = await response.json();
     const dealership1Id: number = body.data.id;
     const dealership1Name: string = body.data.name;
@@ -93,7 +93,7 @@ test.describe.serial('01 — Dealerships: CRUD автосалонов', () => {
     updateState({ dealership1Id, dealership1Name });
 
     // Автосалон должен появиться в списке
-    await expect(page.getByText('Автосалон Тест-1')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText('Автосалон Тест-1').first()).toBeVisible({ timeout: 10000 });
   });
 
   // ─── 5. Создание «Автосалон Тест-2» ─────────────────────────────────────────
@@ -118,14 +118,14 @@ test.describe.serial('01 — Dealerships: CRUD автосалонов', () => {
     // Перехватываем ответ API
     const responsePromise = page.waitForResponse(
       (resp) =>
-        resp.url().includes('/api/dealerships') &&
-        resp.request().method() === 'POST' &&
-        resp.status() === 201
+        resp.url().includes('/dealerships') &&
+        resp.request().method() === 'POST',
     );
 
     await page.getByRole('button', { name: 'Создать автосалон', exact: true }).last().click();
 
     const response = await responsePromise;
+    expect(response.status()).toBe(201);
     const body = await response.json();
     const dealership2Id: number = body.data.id;
     const dealership2Name: string = body.data.name;
@@ -139,8 +139,8 @@ test.describe.serial('01 — Dealerships: CRUD автосалонов', () => {
   // ─── 6. Список показывает оба автосалона ────────────────────────────────────
 
   test('список показывает оба созданных автосалона', async ({ page }) => {
-    await expect(page.getByText('Автосалон Тест-1')).toBeVisible({ timeout: 10000 });
-    await expect(page.getByText('Автосалон Тест-2')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText('Автосалон Тест-1').first()).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText('Автосалон Тест-2').first()).toBeVisible({ timeout: 10000 });
   });
 
   // ─── 7. Поиск по названию ───────────────────────────────────────────────────
@@ -232,7 +232,7 @@ test.describe.serial('01 — Dealerships: CRUD автосалонов', () => {
     // Перехватываем ответ PUT/PATCH
     const responsePromise = page.waitForResponse(
       (resp) =>
-        resp.url().includes('/api/dealerships') &&
+        resp.url().includes('/dealerships') &&
         (resp.request().method() === 'PUT' || resp.request().method() === 'PATCH') &&
         resp.status() === 200
     );
@@ -266,7 +266,7 @@ test.describe.serial('01 — Dealerships: CRUD автосалонов', () => {
     // Перехватываем ответ PUT/PATCH
     const responsePromise = page.waitForResponse(
       (resp) =>
-        resp.url().includes('/api/dealerships') &&
+        resp.url().includes('/dealerships') &&
         (resp.request().method() === 'PUT' || resp.request().method() === 'PATCH') &&
         resp.status() === 200
     );

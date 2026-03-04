@@ -99,7 +99,7 @@ test.describe.serial('05 — Task Generators: CRUD генераторов зад
     // Перехватываем ответ POST
     const responsePromise = page.waitForResponse(
       (resp) =>
-        resp.url().includes('/api/task-generators') &&
+        resp.url().includes('/task-generators') &&
         resp.request().method() === 'POST' &&
         resp.status() === 201,
     );
@@ -197,7 +197,7 @@ test.describe.serial('05 — Task Generators: CRUD генераторов зад
     // Перехватываем ответ PUT/PATCH
     const responsePromise = page.waitForResponse(
       (resp) =>
-        resp.url().includes('/api/task-generators') &&
+        resp.url().includes('/task-generators') &&
         (resp.request().method() === 'PUT' ||
           resp.request().method() === 'PATCH') &&
         resp.status() === 200,
@@ -258,7 +258,7 @@ test.describe.serial('05 — Task Generators: CRUD генераторов зад
     // Перехватываем ответ POST
     const responsePromise = page.waitForResponse(
       (resp) =>
-        resp.url().includes('/api/task-generators') &&
+        resp.url().includes('/task-generators') &&
         resp.request().method() === 'POST' &&
         resp.status() === 201,
     );

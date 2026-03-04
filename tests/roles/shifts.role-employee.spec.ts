@@ -20,7 +20,8 @@ test.describe('ShiftsPage (employee)', () => {
   });
 
   test('сотрудник видит страницу смен с историей своих смен', async ({ page }) => {
-    await expect(page.getByRole('heading', { name: 'Смены' })).toBeVisible({ timeout: 10000 });
+    // Используем exact: true чтобы различить h1 заголовок страницы от h2 в секциях
+    await expect(page.getByRole('heading', { name: 'Смены', exact: true })).toBeVisible({ timeout: 10000 });
     await expect(page.locator('text=История смен')).toBeVisible({ timeout: 15000 });
   });
 });

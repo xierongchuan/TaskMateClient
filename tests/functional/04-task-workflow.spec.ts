@@ -80,7 +80,7 @@ test.describe.serial('Task Workflow — полный lifecycle задач', () =
       // Перехватываем ответ API на обновление статуса
       const responsePromise = page.waitForResponse(
         (resp) =>
-          resp.url().includes('/api/tasks') &&
+          resp.url().includes('/tasks') &&
           resp.url().includes('/status') &&
           resp.request().method() === 'PATCH',
         { timeout: 15000 },
@@ -146,7 +146,7 @@ test.describe.serial('Task Workflow — полный lifecycle задач', () =
 
       const responsePromise = page.waitForResponse(
         (resp) =>
-          resp.url().includes('/api/tasks') &&
+          resp.url().includes('/tasks') &&
           resp.url().includes('/status') &&
           resp.request().method() === 'PATCH',
         { timeout: 15000 },
@@ -215,7 +215,7 @@ test.describe.serial('Task Workflow — полный lifecycle задач', () =
 
       const responsePromise = page.waitForResponse(
         (resp) =>
-          resp.url().includes('/api/task-responses') &&
+          resp.url().includes('/task-responses') &&
           resp.url().includes('/approve') &&
           resp.request().method() === 'POST',
         { timeout: 15000 },
@@ -278,7 +278,7 @@ test.describe.serial('Task Workflow — полный lifecycle задач', () =
 
       const responsePromise = page.waitForResponse(
         (resp) =>
-          resp.url().includes('/api/tasks') &&
+          resp.url().includes('/tasks') &&
           (resp.url().includes('/status') || resp.url().includes('/proof')) &&
           (resp.request().method() === 'PATCH' || resp.request().method() === 'POST'),
         { timeout: 20000 },
@@ -343,7 +343,7 @@ test.describe.serial('Task Workflow — полный lifecycle задач', () =
 
       const responsePromise = page.waitForResponse(
         (resp) =>
-          resp.url().includes('/api/task-responses') &&
+          resp.url().includes('/task-responses') &&
           resp.url().includes('/reject') &&
           resp.request().method() === 'POST',
         { timeout: 15000 },
@@ -405,7 +405,7 @@ test.describe.serial('Task Workflow — полный lifecycle задач', () =
 
       const responsePromise = page.waitForResponse(
         (resp) =>
-          resp.url().includes('/api/tasks') &&
+          resp.url().includes('/tasks') &&
           (resp.url().includes('/status') || resp.url().includes('/proof')) &&
           (resp.request().method() === 'PATCH' || resp.request().method() === 'POST'),
         { timeout: 20000 },
@@ -454,7 +454,7 @@ test.describe.serial('Task Workflow — полный lifecycle задач', () =
 
       const responsePromise = page.waitForResponse(
         (resp) =>
-          resp.url().includes('/api/task-responses') &&
+          resp.url().includes('/task-responses') &&
           resp.url().includes('/approve') &&
           resp.request().method() === 'POST',
         { timeout: 15000 },
@@ -521,7 +521,7 @@ test.describe.serial('Task Workflow — полный lifecycle задач', () =
 
       const responsePromise = page.waitForResponse(
         (resp) =>
-          resp.url().includes('/api/tasks') &&
+          resp.url().includes('/tasks') &&
           resp.url().includes('/status') &&
           resp.request().method() === 'PATCH',
         { timeout: 15000 },
@@ -566,7 +566,7 @@ test.describe.serial('Task Workflow — полный lifecycle задач', () =
 
       const responsePromise = page.waitForResponse(
         (resp) =>
-          resp.url().includes('/api/tasks') &&
+          resp.url().includes('/tasks') &&
           resp.url().includes('/status') &&
           resp.request().method() === 'PATCH',
         { timeout: 15000 },
@@ -632,7 +632,7 @@ test.describe.serial('Task Workflow — полный lifecycle задач', () =
 
           const responsePromise = page.waitForResponse(
             (resp) =>
-              resp.url().includes('/api/task-responses') &&
+              resp.url().includes('/task-responses') &&
               resp.url().includes('/approve') &&
               resp.request().method() === 'POST',
             { timeout: 15000 },

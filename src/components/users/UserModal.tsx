@@ -28,6 +28,7 @@ export const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, user }) =
   const queryClient = useQueryClient();
   const { data: dealershipsData } = useDealerships();
   const [serverError, setServerError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState<Partial<CreateUserRequest & UpdateUserRequest>>({
     login: '',
     password: '',
@@ -39,12 +40,33 @@ export const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, user }) =
   });
 
   /**
-   * Обработка ошибок API с учётом error_type.
+   * Обработка ошибок API с учётом error_type и field-level errors.
    */
   const handleApiError = (error: any, defaultMessage: string): void => {
     const errorData = error.response?.data as ApiErrorResponse | undefined;
     const errorType = errorData?.error_type;
     const message = errorData?.message;
+
+    // Обработка полевых ошибок валидации
+    if (errorData?.errors) {
+      const newFieldErrors: Record<string, string> = {};
+      let allErrorMessages: string[] = [];
+
+      for (const [field, messages] of Object.entries(errorData.errors)) {
+        if (Array.isArray(messages) && messages.length > 0) {
+          newFieldErrors[field] = messages[0];
+          allErrorMessages = [...allErrorMessages, ...messages];
+        }
+      }
+
+      if (Object.keys(newFieldErrors).length > 0) {
+        setFieldErrors(newFieldErrors);
+        // Показываем все ошибки валидации в одном сообщении
+        const validationMessage = allErrorMessages.join('; ');
+        setServerError(validationMessage);
+        return;
+      }
+    }
 
     if (errorType === 'access_denied') {
       setServerError('У вас нет доступа для выполнения этого действия.');
@@ -55,6 +77,7 @@ export const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, user }) =
 
   useEffect(() => {
     setServerError(null);
+    setFieldErrors({});
     if (user) {
       setFormData({
         login: user.login,
@@ -150,7 +173,14 @@ export const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, user }) =
                 type="password"
                 required
                 value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                onChange={(e) => {
+                  setFormData({ ...formData, password: e.target.value });
+                  if (fieldErrors.password) {
+                    setFieldErrors({ ...fieldErrors, password: '' });
+                  }
+                }}
+                error={fieldErrors.password}
+                hint="Минимум 8 символов, должен содержать заглавную и строчную буквы и цифру"
                 inputSize="lg"
               />
             )}
@@ -160,7 +190,14 @@ export const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, user }) =
                 label="Новый пароль (оставьте пустым, чтобы не менять)"
                 type="password"
                 value={formData.password || ''}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                onChange={(e) => {
+                  setFormData({ ...formData, password: e.target.value });
+                  if (fieldErrors.password) {
+                    setFieldErrors({ ...fieldErrors, password: '' });
+                  }
+                }}
+                error={fieldErrors.password}
+                hint="Минимум 8 символов, должен содержать заглавную и строчную буквы и цифру"
                 inputSize="lg"
               />
             )}

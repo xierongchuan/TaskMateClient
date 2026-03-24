@@ -11,7 +11,7 @@ import {
   Skeleton,
   useToast, // Use our custom hook
 } from '../components/ui';
-import type { UpdateUserRequest } from '../types/user'; // Import type
+import type { UpdateUserRequest, ApiErrorResponse } from '../types/user'; // Import type
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 // import { toast } from 'react-hot-toast'; // Removed
 import {
@@ -37,6 +37,7 @@ export const ProfilePage: React.FC = () => {
   const { showToast } = useToast(); // Destructure showToast
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<'info' | 'security' | 'stats'>('info');
+  const [passwordFieldErrors, setPasswordFieldErrors] = useState<Record<string, string>>({});
 
   // Personal Info Form State
   const [formData, setFormData] = useState({
@@ -95,6 +96,29 @@ export const ProfilePage: React.FC = () => {
     },
     onError: (error: unknown) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const errorData = (error as any)?.response?.data as ApiErrorResponse | undefined;
+
+      // Обработка полевых ошибок валидации
+      if (errorData?.errors) {
+        const newFieldErrors: Record<string, string> = {};
+        let allErrorMessages: string[] = [];
+
+        for (const [field, messages] of Object.entries(errorData.errors)) {
+          if (Array.isArray(messages) && messages.length > 0) {
+            newFieldErrors[field] = messages[0];
+            allErrorMessages = [...allErrorMessages, ...messages];
+          }
+        }
+        if (Object.keys(newFieldErrors).length > 0) {
+          setPasswordFieldErrors(newFieldErrors);
+          // Показываем все ошибки валидации в одном сообщении
+          const validationMessage = allErrorMessages.join('; ');
+          showToast({ type: 'error', message: validationMessage });
+          return;
+        }
+      }
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const message = (error as any)?.response?.data?.message || (error as Error)?.message || 'Ошибка обновления профиля';
       showToast({ type: 'error', message });
     }
@@ -110,6 +134,7 @@ export const ProfilePage: React.FC = () => {
 
   const handleUpdatePassword = (e: React.FormEvent) => {
     e.preventDefault();
+    setPasswordFieldErrors({});
     if (!passwordData.current_password) {
       showToast({ type: 'error', message: 'Введите текущий пароль' });
       return;
@@ -321,8 +346,15 @@ export const ProfilePage: React.FC = () => {
                     label="Новый пароль"
                     type="password"
                     value={passwordData.password}
-                    onChange={(e) => setPasswordData({ ...passwordData, password: e.target.value })}
+                    onChange={(e) => {
+                      setPasswordData({ ...passwordData, password: e.target.value });
+                      if (passwordFieldErrors.password) {
+                        setPasswordFieldErrors({ ...passwordFieldErrors, password: '' });
+                      }
+                    }}
+                    error={passwordFieldErrors.password}
                     required
+                    hint="Минимум 8 символов, должен содержать заглавную и строчную буквы и цифру"
                     placeholder="••••••••"
                   />
 

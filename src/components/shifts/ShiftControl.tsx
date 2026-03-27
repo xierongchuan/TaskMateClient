@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { useMyCurrentShift, useCreateShift, useUpdateShift } from '../../hooks/useShifts';
+import { useMyCurrentShift, useUpdateShift } from '../../hooks/useShifts';
 import { useAuth } from '../../hooks/useAuth';
 import { usePermissions } from '../../hooks/usePermissions';
-import { CameraIcon, PlayIcon, StopIcon } from '@heroicons/react/24/outline';
+import { CameraIcon, StopIcon } from '@heroicons/react/24/outline';
 import { DealershipSelector } from '../common/DealershipSelector';
 import { useToast, ConfirmDialog } from '../ui';
 import { useConfirmDialog } from '../../hooks/useConfirmDialog';
 import { ShiftPhotoViewer } from './ShiftPhotoViewer';
-import { ShiftScheduleSelector } from './ShiftScheduleSelector';
+
 import { formatDateTime } from '../../utils/dateTime';
-import type { CreateShiftRequest, UpdateShiftRequest, ShiftSchedule, ScheduleAmbiguousError } from '../../types/shift';
+import type { UpdateShiftRequest } from '../../types/shift';
 
 export const ShiftControl: React.FC = () => {
   const { user } = useAuth();
@@ -24,80 +24,12 @@ export const ShiftControl: React.FC = () => {
 
   const { data: currentShiftData } = useMyCurrentShift(selectedDealershipId);
   const currentShift = currentShiftData?.data;
-  const createShiftMutation = useCreateShift();
   const updateShiftMutation = useUpdateShift();
 
   const { showToast } = useToast();
   const { showConfirm, confirmState, handleConfirm, handleCancel } = useConfirmDialog();
-  const [openingPhoto, setOpeningPhoto] = useState<File | null>(null);
   const [closingPhoto, setClosingPhoto] = useState<File | null>(null);
-  const [scheduleCandidates, setScheduleCandidates] = useState<ShiftSchedule[]>([]);
-  const [pendingShiftData, setPendingShiftData] = useState<CreateShiftRequest | null>(null);
-  const [showScheduleSelector, setShowScheduleSelector] = useState(false);
 
-  const handleOpenShift = async () => {
-    if (!openingPhoto || !selectedDealershipId) {
-      showToast({ type: 'error', message: 'Необходимо выбрать фото открытия смены и автосалон' });
-      return;
-    }
-
-    const shiftData: CreateShiftRequest = {
-      user_id: user!.id,
-      dealership_id: selectedDealershipId,
-      opening_photo: openingPhoto,
-    };
-
-    createShiftMutation.mutate(shiftData, {
-      onSuccess: () => {
-        setOpeningPhoto(null);
-        showToast({ type: 'success', message: 'Смена успешно открыта!' });
-      },
-      onError: (error: unknown) => {
-        const axiosError = error as { response?: { status?: number; data?: ScheduleAmbiguousError & { message?: string } } };
-        if (
-          axiosError.response?.status === 409 &&
-          axiosError.response.data?.error_code === 'schedule_ambiguous' &&
-          axiosError.response.data.candidates?.length
-        ) {
-          setScheduleCandidates(axiosError.response.data.candidates);
-          setPendingShiftData(shiftData);
-          setShowScheduleSelector(true);
-          return;
-        }
-        const message = axiosError.response?.data?.message || 'Неизвестная ошибка';
-        showToast({ type: 'error', message: `Ошибка открытия смены: ${message}` });
-      },
-    });
-  };
-
-  const handleScheduleSelected = (scheduleId: number) => {
-    if (!pendingShiftData) return;
-
-    setShowScheduleSelector(false);
-    const shiftDataWithSchedule: CreateShiftRequest = {
-      ...pendingShiftData,
-      shift_schedule_id: scheduleId,
-    };
-
-    createShiftMutation.mutate(shiftDataWithSchedule, {
-      onSuccess: () => {
-        setOpeningPhoto(null);
-        setPendingShiftData(null);
-        setScheduleCandidates([]);
-        showToast({ type: 'success', message: 'Смена успешно открыта!' });
-      },
-      onError: (error: unknown) => {
-        const message = (error as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Неизвестная ошибка';
-        showToast({ type: 'error', message: `Ошибка открытия смены: ${message}` });
-      },
-    });
-  };
-
-  const handleScheduleSelectorCancel = () => {
-    setShowScheduleSelector(false);
-    setPendingShiftData(null);
-    setScheduleCandidates([]);
-  };
 
   const handleCloseShift = async () => {
     if (!currentShift) return;
@@ -212,108 +144,55 @@ export const ShiftControl: React.FC = () => {
           </div>
 
           {/* Правая колонка: форма действия */}
-          {selectedDealershipId && (
+          {selectedDealershipId && isShiftOpen && (
             <div className="lg:flex-1">
-              {isShiftOpen ? (
-                /* Закрытие смены */
-                <div className="flex flex-col sm:flex-row sm:items-end gap-3">
-                  <div className="flex-1">
-                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
-                      Фото закрытия (необязательно)
-                    </label>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        capture="environment"
-                        onChange={(e) => setClosingPhoto(e.target.files?.[0] || null)}
-                        className="hidden"
-                        id="closing-photo"
-                      />
-                      <label
-                        htmlFor="closing-photo"
-                        className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 cursor-pointer transition-colors"
-                      >
-                        <CameraIcon className="w-4 h-4 mr-1.5 text-gray-400" />
-                        {closingPhoto ? (
-                          <span className="truncate max-w-[120px]">{closingPhoto.name}</span>
-                        ) : (
-                          'Выбрать фото'
-                        )}
-                      </label>
-                      {closingPhoto && (
-                        <button
-                          type="button"
-                          onClick={() => setClosingPhoto(null)}
-                          className="text-red-500 hover:text-red-700 text-xs font-medium transition-colors"
-                        >
-                          Удалить
-                        </button>
+              {/* Закрытие смены */}
+              <div className="flex flex-col sm:flex-row sm:items-end gap-3">
+                <div className="flex-1">
+                  <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+                    Фото закрытия (необязательно)
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      onChange={(e) => setClosingPhoto(e.target.files?.[0] || null)}
+                      className="hidden"
+                      id="closing-photo"
+                    />
+                    <label
+                      htmlFor="closing-photo"
+                      className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 cursor-pointer transition-colors"
+                    >
+                      <CameraIcon className="w-4 h-4 mr-1.5 text-gray-400" />
+                      {closingPhoto ? (
+                        <span className="truncate max-w-[120px]">{closingPhoto.name}</span>
+                      ) : (
+                        'Выбрать фото'
                       )}
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleCloseShift}
-                    disabled={updateShiftMutation.isPending}
-                    className="inline-flex items-center justify-center px-5 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm whitespace-nowrap"
-                  >
-                    <StopIcon className="w-4 h-4 mr-1.5" />
-                    {updateShiftMutation.isPending ? 'Закрытие...' : 'Закрыть смену'}
-                  </button>
-                </div>
-              ) : (
-                /* Открытие смены */
-                <div className="flex flex-col sm:flex-row sm:items-end gap-3">
-                  <div className="flex-1">
-                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
-                      Фото открытия смены *
                     </label>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        capture="environment"
-                        onChange={(e) => setOpeningPhoto(e.target.files?.[0] || null)}
-                        className="hidden"
-                        id="opening-photo"
-                      />
-                      <label
-                        htmlFor="opening-photo"
-                        className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 cursor-pointer transition-colors"
+                    {closingPhoto && (
+                      <button
+                        type="button"
+                        onClick={() => setClosingPhoto(null)}
+                        className="text-red-500 hover:text-red-700 text-xs font-medium transition-colors"
                       >
-                        <CameraIcon className="w-4 h-4 mr-1.5 text-gray-400" />
-                        {openingPhoto ? (
-                          <span className="truncate max-w-[120px]">{openingPhoto.name}</span>
-                        ) : (
-                          'Выбрать фото'
-                        )}
-                      </label>
-                      {openingPhoto && (
-                        <button
-                          type="button"
-                          onClick={() => setOpeningPhoto(null)}
-                          className="text-red-500 hover:text-red-700 text-xs font-medium transition-colors"
-                        >
-                          Удалить
-                        </button>
-                      )}
-                    </div>
-                    <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
-                      Сделайте фото экрана компьютера с текущим временем
-                    </p>
+                        Удалить
+                      </button>
+                    )}
                   </div>
-                  <button
-                    type="button"
-                    onClick={handleOpenShift}
-                    disabled={!openingPhoto || createShiftMutation.isPending}
-                    className="inline-flex items-center justify-center px-5 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm whitespace-nowrap"
-                  >
-                    <PlayIcon className="w-4 h-4 mr-1.5" />
-                    {createShiftMutation.isPending ? 'Открытие...' : 'Открыть смену'}
-                  </button>
                 </div>
-              )}
+                <button
+                  type="button"
+                  onClick={handleCloseShift}
+                  disabled={updateShiftMutation.isPending}
+                  className="inline-flex items-center justify-center px-5 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm whitespace-nowrap"
+                >
+                  <StopIcon className="w-4 h-4 mr-1.5" />
+                  {updateShiftMutation.isPending ? 'Закрытие...' : 'Закрыть смену'}
+                </button>
+              </div>
             </div>
           )}
         </div>
@@ -329,12 +208,7 @@ export const ShiftControl: React.FC = () => {
       onConfirm={handleConfirm}
       onCancel={handleCancel}
     />
-    <ShiftScheduleSelector
-      isOpen={showScheduleSelector}
-      schedules={scheduleCandidates}
-      onSelect={handleScheduleSelected}
-      onCancel={handleScheduleSelectorCancel}
-    />
+
     </>
   );
 };

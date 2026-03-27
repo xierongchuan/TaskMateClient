@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { shiftsApi } from '../api/shifts';
-import type { CreateShiftRequest, UpdateShiftRequest, ShiftsFilters } from '../types/shift';
+import type { UpdateShiftRequest, ShiftsFilters } from '../types/shift';
 
 // Hook for getting all shifts
 export const useShifts = (filters?: ShiftsFilters) => {
@@ -64,21 +64,6 @@ export const useMyCurrentShift = (dealershipId?: number) => {
     refetchInterval: 30000, // Refetch every 30 seconds (URLs are now stable)
     enabled: !!dealershipId, // Only fetch if dealershipId is provided
     placeholderData: (prev) => prev,
-  });
-};
-
-// Hook for creating a shift
-export const useCreateShift = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (data: CreateShiftRequest) => shiftsApi.createShift(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['shifts'] });
-      queryClient.invalidateQueries({ queryKey: ['my-shifts'] });
-      queryClient.invalidateQueries({ queryKey: ['shifts', 'current'] });
-      queryClient.invalidateQueries({ queryKey: ['my-shift', 'current'] });
-    },
   });
 };
 

@@ -1,5 +1,5 @@
 import apiClient from './client';
-import type { Shift, ShiftSchedule, CreateShiftRequest, UpdateShiftRequest, ShiftsFilters } from '../types/shift';
+import type { Shift, ShiftSchedule, UpdateShiftRequest, ShiftsFilters } from '../types/shift';
 import type { PaginatedResponse } from '../types/api';
 
 export const shiftsApi = {
@@ -65,25 +65,6 @@ export const shiftsApi = {
   getMyCurrentShift: async (dealershipId?: number): Promise<{ data: Shift }> => {
     const response = await apiClient.get<{ data: Shift }>('/shifts/my/current', {
       params: { dealership_id: dealershipId },
-    });
-    return response.data;
-  },
-
-  // Create new shift
-  createShift: async (data: CreateShiftRequest): Promise<{ data: Shift }> => {
-    const formData = new FormData();
-    formData.append('user_id', data.user_id.toString());
-    formData.append('dealership_id', data.dealership_id.toString());
-    formData.append('opening_photo', data.opening_photo);
-
-    if (data.shift_schedule_id !== undefined) {
-      formData.append('shift_schedule_id', data.shift_schedule_id.toString());
-    }
-
-    const response = await apiClient.post<{ data: Shift }>('/shifts', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
     });
     return response.data;
   },

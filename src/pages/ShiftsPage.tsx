@@ -35,7 +35,6 @@ import {
 import { Select } from '../components/ui/Select';
 import type { SelectOptionGroup } from '../components/ui/Select';
 import { ShiftPhotoViewer } from '../components/shifts/ShiftPhotoViewer';
-import { ShiftControl } from '../components/shifts/ShiftControl';
 
 export const ShiftsPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -195,9 +194,6 @@ export const ShiftsPage: React.FC = () => {
           />
         )}
       </PageHeader>
-
-      {/* 0. Управление сменой */}
-      <ShiftControl />
 
       {/* 1. Статистика */}
       {isStatisticsLoading || isCurrentShiftsLoading ? (

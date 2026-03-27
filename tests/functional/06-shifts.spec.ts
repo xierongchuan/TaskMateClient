@@ -11,7 +11,7 @@ const TEST_IMAGE = path.join(__dirname, 'fixtures', 'test-image.png');
 /**
  * Функциональные тесты страницы смен /shifts
  * Тесты выполняются строго последовательно (serial).
- * Открытие/закрытие смены — от сотрудника (employee1).
+ * Закрытие смены — от сотрудника (employee1).
  * Просмотр истории — от admin.
  */
 test.describe.serial('06 — Shifts: управление сменами', () => {
@@ -51,149 +51,7 @@ test.describe.serial('06 — Shifts: управление сменами', () =>
     });
   });
 
-  // ─── 3. employee1 открывает смену ────────────────────────────────────────
-
-  test('employee1 открывает смену с фото — статус «Смена открыта»', async ({
-    browser,
-  }) => {
-    const ctx = await browser.newContext({
-      storageState: FUNC_EMPLOYEE1_STATE,
-    });
-    const empPage = await ctx.newPage();
-
-    try {
-      await empPage.goto('/shifts');
-      await empPage.waitForLoadState('domcontentloaded');
-      await expect(
-        empPage.getByRole('heading', { name: 'Смены' }),
-      ).toBeVisible({ timeout: 15000 });
-
-      // Секция управления сменой
-      await expect(empPage.getByText('Управление сменой')).toBeVisible({
-        timeout: 10000,
-      });
-
-      // Выбираем автосалон
-      const dealershipSelect = empPage
-        .locator('label')
-        .filter({ hasText: 'Автосалон' })
-        .locator('..')
-        .locator('select')
-        .first();
-      const dealershipSelectExists = await dealershipSelect
-        .isVisible()
-        .catch(() => false);
-
-      if (dealershipSelectExists) {
-        await dealershipSelect.selectOption({ label: 'Автосалон Тест-1' });
-        await empPage.waitForTimeout(500);
-      }
-
-      // Загружаем фото открытия смены
-      const fileInput = empPage
-        .locator('#opening-photo')
-        .or(empPage.locator('input[type="file"]').first());
-      await fileInput.setInputFiles(TEST_IMAGE);
-
-      await empPage.waitForTimeout(500);
-
-      // Нажимаем «Открыть смену»
-      const openShiftButton = empPage.getByRole('button', {
-        name: 'Открыть смену',
-      });
-      await expect(openShiftButton).toBeVisible({ timeout: 5000 });
-
-      const responsePromise = empPage.waitForResponse(
-        (resp) =>
-          resp.url().includes('/shifts') &&
-          resp.request().method() === 'POST' &&
-          (resp.status() === 200 || resp.status() === 201),
-      );
-
-      await openShiftButton.click();
-      await responsePromise;
-
-      // Статус должен измениться на «Смена открыта»
-      await expect(empPage.getByText('Смена открыта')).toBeVisible({
-        timeout: 10000,
-      });
-    } finally {
-      await ctx.close();
-    }
-  });
-
-  // ─── 4. employee1 закрывает смену ────────────────────────────────────────
-
-  test('employee1 закрывает смену — статус «Смена закрыта»', async ({
-    browser,
-  }) => {
-    const ctx = await browser.newContext({
-      storageState: FUNC_EMPLOYEE1_STATE,
-    });
-    const empPage = await ctx.newPage();
-
-    try {
-      await empPage.goto('/shifts');
-      await empPage.waitForLoadState('domcontentloaded');
-      await expect(
-        empPage.getByRole('heading', { name: 'Смены' }),
-      ).toBeVisible({ timeout: 15000 });
-
-      // Смена должна быть открыта
-      await expect(empPage.getByText('Смена открыта')).toBeVisible({
-        timeout: 10000,
-      });
-
-      // Загружаем фото закрытия (необязательно, но загружаем)
-      const closingFileInput = empPage
-        .locator('input[type="file"]')
-        .last();
-      const closingFileExists = await closingFileInput
-        .isVisible()
-        .catch(() => false);
-      if (closingFileExists) {
-        await closingFileInput.setInputFiles(TEST_IMAGE);
-        await empPage.waitForTimeout(500);
-      }
-
-      // Нажимаем «Закрыть смену»
-      const closeShiftButton = empPage.getByRole('button', {
-        name: 'Закрыть смену',
-      });
-      await expect(closeShiftButton).toBeVisible({ timeout: 5000 });
-      await closeShiftButton.click();
-
-      // Диалог подтверждения «Закрыть смену?»
-      await expect(empPage.getByText('Закрыть смену?')).toBeVisible({
-        timeout: 5000,
-      });
-
-      const responsePromise = empPage.waitForResponse(
-        (resp) =>
-          resp.url().includes('/shifts') &&
-          (resp.request().method() === 'PUT' ||
-            resp.request().method() === 'PATCH' ||
-            resp.request().method() === 'POST') &&
-          resp.status() === 200,
-      );
-
-      // Подтверждаем в диалоге
-      await empPage
-        .getByRole('button', { name: 'Закрыть смену' })
-        .last()
-        .click();
-      await responsePromise;
-
-      // Статус должен измениться на «Смена закрыта»
-      await expect(empPage.getByText('Смена закрыта')).toBeVisible({
-        timeout: 10000,
-      });
-    } finally {
-      await ctx.close();
-    }
-  });
-
-  // ─── 5. admin видит смену в истории ──────────────────────────────────────
+  // ─── 3. admin видит смену в истории ──────────────────────────────────────
 
   test('admin видит закрытую смену в истории', async ({ page }) => {
     await page.goto('/shifts');
@@ -216,7 +74,7 @@ test.describe.serial('06 — Shifts: управление сменами', () =>
     await expect(shiftEntry).toBeVisible({ timeout: 10000 });
   });
 
-  // ─── 6. admin видит детали смены ─────────────────────────────────────────
+  // ─── 5. admin видит детали смены ─────────────────────────────────────────
 
   test('admin видит детали записи смены в истории', async ({ page }) => {
     await page.goto('/shifts');

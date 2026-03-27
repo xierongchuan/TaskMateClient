@@ -12,12 +12,7 @@ test.describe('ShiftsPage (employee)', () => {
     await page.waitForLoadState('networkidle');
   });
 
-  test('сотрудник видит компонент управления сменой (ShiftControl)', async ({ page }) => {
-    // ShiftControl рендерит кнопку открытия/закрытия смены
-    // Ищем любую кнопку с текстом "Открыть смену" или "Закрыть смену"
-    const shiftControlBtn = page.getByRole('button', { name: /открыть смену|закрыть смену/i });
-    await expect(shiftControlBtn).toBeVisible({ timeout: 15000 });
-  });
+
 
   test('сотрудник видит страницу смен с историей своих смен', async ({ page }) => {
     // Используем exact: true чтобы различить h1 заголовок страницы от h2 в секциях

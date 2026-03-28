@@ -19,6 +19,7 @@ import { Modal, Button, Badge, Skeleton } from '../ui';
 import { DonutChart, DonutChartLegend } from '../ui/DonutChart';
 import { StatCard } from '../ui/StatCard';
 import { PriorityBadge } from '../common';
+import { useResponsiveViewMode } from '../../hooks/useResponsiveViewMode';
 
 interface GeneratorDetailsModalProps {
   isOpen: boolean;
@@ -34,6 +35,7 @@ export const GeneratorDetailsModal: React.FC<GeneratorDetailsModalProps> = ({
   onEdit
 }) => {
   const permissions = usePermissions();
+  const { isMobile } = useResponsiveViewMode();
 
   const { data: statsData, isLoading: statsLoading } = useQuery({
     queryKey: ['generator-stats', generator?.id],
@@ -148,7 +150,7 @@ export const GeneratorDetailsModal: React.FC<GeneratorDetailsModalProps> = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={generator.title} size="2xl">
+    <Modal isOpen={isOpen} onClose={onClose} title={generator.title} size={isMobile ? "xl" : "2xl"}>
       <Modal.Body>
         {/* Header badges */}
         <div className="flex flex-wrap gap-2 items-center mb-6">

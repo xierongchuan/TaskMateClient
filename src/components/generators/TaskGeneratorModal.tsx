@@ -14,6 +14,7 @@ import { RESPONSE_TYPES, RESPONSE_TYPE_LABELS } from '../../constants/tasks';
 import { Alert, Input, Textarea, Select, Button, Modal } from '../ui';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { getTodayDateString } from '../../utils/dateTime';
+import { useResponsiveViewMode } from '../../hooks/useResponsiveViewMode';
 
 interface TaskGeneratorModalProps {
   isOpen: boolean;
@@ -51,6 +52,7 @@ export const TaskGeneratorModal: React.FC<TaskGeneratorModalProps> = ({
   const queryClient = useQueryClient();
   const isEditing = !!generator;
   const [serverError, setServerError] = useState<string | null>(null);
+  const { isMobile } = useResponsiveViewMode();
 
   const [formData, setFormData] = useState({
     title: '',
@@ -279,7 +281,7 @@ export const TaskGeneratorModal: React.FC<TaskGeneratorModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title={isEditing ? 'Редактировать генератор' : 'Создать генератор'}
-      size="2xl"
+      size={isMobile ? "xl" : "2xl"}
     >
       <form onSubmit={handleSubmit}>
         <Modal.Body>
@@ -293,7 +295,7 @@ export const TaskGeneratorModal: React.FC<TaskGeneratorModalProps> = ({
             />
           )}
 
-          <div className="space-y-4 max-h-[60vh] overflow-y-auto px-2 -mx-2">
+          <div className="space-y-4 max-h-[70vh] overflow-y-auto px-2 -mx-2">
             {/* Title */}
             <Input
               label="Название *"
@@ -355,7 +357,7 @@ export const TaskGeneratorModal: React.FC<TaskGeneratorModalProps> = ({
             </div>
 
             {/* Times */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Input
                 label="Время появления"
                 type="time"
@@ -387,7 +389,7 @@ export const TaskGeneratorModal: React.FC<TaskGeneratorModalProps> = ({
             )}
 
             {/* Date Range */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Input
                 label="Дата начала *"
                 type="date"
@@ -407,7 +409,7 @@ export const TaskGeneratorModal: React.FC<TaskGeneratorModalProps> = ({
             </div>
 
             {/* Type & Priority */}
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <Select
                 label="Тип задачи"
                 value={formData.task_type}
@@ -442,14 +444,16 @@ export const TaskGeneratorModal: React.FC<TaskGeneratorModalProps> = ({
 
             {/* Assignments */}
             {formData.dealership_id && (
-              <UserCheckboxList
-                users={users}
-                selectedIds={formData.assignments}
-                onToggle={handleUserToggle}
-                label="Исполнители"
-                showCount
-                required
-              />
+              <div className={isMobile ? "max-h-48 overflow-y-auto" : ""}>
+                <UserCheckboxList
+                  users={users}
+                  selectedIds={formData.assignments}
+                  onToggle={handleUserToggle}
+                  label="Исполнители"
+                  showCount
+                  required
+                />
+              </div>
             )}
 
             {/* Notification Settings */}

@@ -153,14 +153,17 @@ export const ReportsPage: React.FC = () => {
           >
             Обновить
           </Button>
-          <Button
-            variant="primary"
-            icon={<ArrowDownTrayIcon />}
-            onClick={handleExport}
-            disabled={!reportData}
-          >
-            Экспорт
-          </Button>
+          {/* TODO: Починить экспорт. Временно скрыт, т.к. работает неправильно */}
+          <div className="hidden">
+            <Button
+              variant="primary"
+              icon={<ArrowDownTrayIcon />}
+              onClick={handleExport}
+              disabled={!reportData}
+            >
+              Экспорт
+            </Button>
+          </div>
         </div>
       </PageHeader>
 
@@ -168,9 +171,9 @@ export const ReportsPage: React.FC = () => {
       <Card className="mb-6">
         <Card.Body>
           <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 w-full">
               {/* Period Buttons */}
-              <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 w-full lg:w-auto">
                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300 hidden sm:block">Период:</span>
                 <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                   <Button
@@ -191,15 +194,15 @@ export const ReportsPage: React.FC = () => {
               </div>
 
               {/* Date Range */}
-              <div className="flex flex-col gap-2 sm:gap-3">
+              <div className="flex flex-col gap-2 sm:gap-3 w-full lg:w-auto min-w-0">
                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300 hidden sm:block">Диапазон дат:</span>
                 <label className="text-sm font-medium text-gray-700 dark:text-gray-300 block sm:hidden">Диапазон дат:</label>
-                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 w-full min-w-0">
                   <input
                     type="date"
                     value={dateRange.from}
                     onChange={(e) => setDateRange({ ...dateRange, from: e.target.value })}
-                    className="unified-input w-full sm:w-auto px-3 py-3 border border-gray-200 dark:border-gray-600 rounded-xl text-base focus:outline-none focus:border-accent-500 min-h-[44px] bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all duration-200"
+                    className="unified-input w-full sm:w-auto min-w-0 max-w-full px-3 py-3 border border-gray-200 dark:border-gray-600 rounded-xl text-base focus:outline-none focus:border-accent-500 min-h-[44px] bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all duration-200 box-border block"
                   />
                   <span className="text-gray-500 dark:text-gray-400 text-center sm:text-left hidden sm:block">—</span>
                   <div className="text-center sm:hidden text-gray-500 dark:text-gray-400 text-sm mb-1">до</div>
@@ -207,7 +210,7 @@ export const ReportsPage: React.FC = () => {
                     type="date"
                     value={dateRange.to}
                     onChange={(e) => setDateRange({ ...dateRange, to: e.target.value })}
-                    className="unified-input w-full sm:w-auto px-3 py-3 border border-gray-200 dark:border-gray-600 rounded-xl text-base focus:outline-none focus:border-accent-500 min-h-[44px] bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all duration-200"
+                    className="unified-input w-full sm:w-auto min-w-0 max-w-full px-3 py-3 border border-gray-200 dark:border-gray-600 rounded-xl text-base focus:outline-none focus:border-accent-500 min-h-[44px] bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all duration-200 box-border block"
                   />
                 </div>
               </div>

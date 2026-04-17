@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { readState, updateState } from './setup/state';
-import { FUNC_EMPLOYEE1_STATE } from './setup/helpers';
+import { FUNC_EMPLOYEE1_STATE, FUNC_OBSERVER_STATE } from './setup/helpers';
 
 /**
  * Функциональные тесты страницы ссылок /links
@@ -327,7 +327,7 @@ test.describe.serial('07 — Links: CRUD ссылок', () => {
 
   // ─── 10. Сотрудник видит ссылки, но не может создавать ───────────────────
 
-  test('сотрудник видит ссылки, кнопка «Добавить ссылку» недоступна', async ({
+  test('сотрудник видит ссылки, но не имеет доступа к управлению', async ({
     browser,
   }) => {
     const ctx = await browser.newContext({
@@ -350,7 +350,49 @@ test.describe.serial('07 — Links: CRUD ссылок', () => {
       // Кнопка «Добавить ссылку» НЕ должна быть видна для сотрудника
       await expect(
         empPage.getByRole('button', { name: 'Добавить ссылку' }).first(),
-      ).not.toBeVisible({ timeout: 5000 });
+      ).not.toBeVisible();
+
+      // Недоступно редактирование и удаление (кнопок нет в DOM)
+      const editButtons = empPage.locator('button[aria-label*="редакт" i], button[title*="изменить" i]').filter({ hasNotText: /Отмена/ });
+      await expect(editButtons).toHaveCount(0);
+      
+      const deleteButtons = empPage.locator('button[aria-label*="удал" i], button[title*="удалить" i]');
+      await expect(deleteButtons).toHaveCount(0);
+
+    } finally {
+      await ctx.close();
+    }
+  });
+
+  test('наблюдатель видит ссылки, но не имеет доступа к управлению', async ({
+    browser,
+  }) => {
+    const ctx = await browser.newContext({
+      storageState: FUNC_OBSERVER_STATE,
+    });
+    const obsPage = await ctx.newPage();
+
+    try {
+      await obsPage.goto('/links');
+      await obsPage.waitForLoadState('domcontentloaded');
+      await expect(
+        obsPage.getByRole('heading', { name: 'Ссылки' }),
+      ).toBeVisible({ timeout: 15000 });
+
+      await expect(obsPage.getByText('Google Документы')).toBeVisible({
+        timeout: 10000,
+      });
+
+      await expect(
+        obsPage.getByRole('button', { name: 'Добавить ссылку' }).first(),
+      ).not.toBeVisible();
+
+      const editButtons = obsPage.locator('button[aria-label*="редакт" i], button[title*="изменить" i]').filter({ hasNotText: /Отмена/ });
+      await expect(editButtons).toHaveCount(0);
+      
+      const deleteButtons = obsPage.locator('button[aria-label*="удал" i], button[title*="удалить" i]');
+      await expect(deleteButtons).toHaveCount(0);
+
     } finally {
       await ctx.close();
     }

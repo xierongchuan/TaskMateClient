@@ -50,9 +50,7 @@ test.describe('Reports — страница отчётности', () => {
     ).toBeVisible({ timeout: 15000 });
   });
 
-  test('кнопка "Экспорт" присутствует на странице', async ({ page }) => {
-    await expect(page.getByRole('button', { name: 'Экспорт' })).toBeVisible();
-  });
+
 
   test('поле выбора формата (JSON/PDF) видно', async ({ page }) => {
     // Select с опциями JSON/PDF

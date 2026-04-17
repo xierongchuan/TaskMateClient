@@ -8,6 +8,7 @@ export const usePermissions = () => {
   const canEditUsers = user?.role === 'manager' || user?.role === 'owner';
   const canDeleteUsers = user?.role === 'manager' || user?.role === 'owner';
   const canManageTasks = user?.role === 'manager' || user?.role === 'owner';
+  const canManageLinks = user?.role === 'manager' || user?.role === 'owner';
 
   // Settings are now restricted to Owner only
   const canManageSettings = user?.role === 'owner';
@@ -42,6 +43,7 @@ export const usePermissions = () => {
     canEditUsers,
     canDeleteUsers,
     canManageTasks,
+    canManageLinks,
     canManageSettings,
     canManageDealerships,
     canManageDealershipSettings,

@@ -201,7 +201,7 @@ export const LinksPage: React.FC = () => {
             ]}
           />
         )}
-        {permissions.canManageTasks && (
+        {permissions.canManageLinks && (
           <Button
             variant="primary"
             icon={<PlusIcon />}
@@ -239,7 +239,7 @@ export const LinksPage: React.FC = () => {
           icon={<LinkIcon />}
           title={searchTerm ? 'Ссылки не найдены' : 'Нет ссылок'}
           description={searchTerm ? 'Попробуйте изменить поисковый запрос' : 'Добавьте первые ссылки для быстрого доступа'}
-          action={permissions.canManageTasks && !searchTerm ? (
+          action={permissions.canManageLinks && !searchTerm ? (
             <Button variant="primary" icon={<PlusIcon />} onClick={handleCreate}>
               Добавить ссылку
             </Button>
@@ -281,7 +281,7 @@ export const LinksPage: React.FC = () => {
                                 </p>
                               </div>
                             </div>
-                            {permissions.canManageTasks && (
+                            {permissions.canManageLinks && (
                               <div className="opacity-0 group-hover:opacity-100 transition-opacity">
                                 <ActionButtons
                                   onEdit={() => handleEdit(link)}
@@ -352,7 +352,7 @@ export const LinksPage: React.FC = () => {
                         >
                           Открыть
                         </Button>
-                        {permissions.canManageTasks && (
+                        {permissions.canManageLinks && (
                           <ActionButtons
                             onEdit={() => handleEdit(link)}
                             onDelete={() => handleDelete(link)}

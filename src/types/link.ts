@@ -5,12 +5,16 @@ export interface Link {
   description?: string;
   category?: string;
   creator_id: number;
-  dealership_id?: number;
+  dealership_id: number;
   created_at: string;
   updated_at: string;
   creator?: {
     id: number;
     full_name: string;
+  };
+  dealership?: {
+    id: number;
+    name: string;
   };
 }
 
@@ -19,6 +23,7 @@ export interface CreateLinkRequest {
   url: string;
   description?: string;
   category?: string;
+  dealership_id: number;
 }
 
 export interface UpdateLinkRequest {
@@ -26,4 +31,5 @@ export interface UpdateLinkRequest {
   url?: string;
   description?: string;
   category?: string;
+  dealership_id?: number;
 }

@@ -5,6 +5,7 @@ import type { PaginatedResponse } from '../types/api';
 export interface LinksFilters {
   search?: string;
   category?: string;
+  dealership_id?: number;
   per_page?: number;
   page?: number;
 }

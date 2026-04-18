@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { linksApi } from '../api/links';
 import { usePermissions } from '../hooks/usePermissions';
 import { useResponsiveViewMode } from '../hooks/useResponsiveViewMode';
 import { usePagination } from '../hooks/usePagination';
+import { useWorkspace } from '../hooks/useWorkspace';
 import type { Link, CreateLinkRequest } from '../types/link';
 import {
   PlusIcon,
@@ -39,9 +40,11 @@ import {
   FormField,
 } from '../components/ui';
 import { ActionButtons } from '../components/common';
+import { DealershipSelector } from '../components/common/DealershipSelector';
 
 export const LinksPage: React.FC = () => {
   const permissions = usePermissions();
+  const { dealershipId: workspaceDealershipId, currentDealership } = useWorkspace();
   const queryClient = useQueryClient();
   const { limit } = usePagination();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -55,6 +58,7 @@ export const LinksPage: React.FC = () => {
     url: '',
     description: '',
     category: 'general',
+    dealership_id: workspaceDealershipId || 0,
   });
 
   // Reset page on search change
@@ -63,12 +67,17 @@ export const LinksPage: React.FC = () => {
     setPage(1);
   };
 
+  useEffect(() => {
+    setPage(1);
+  }, [workspaceDealershipId]);
+
   const { data: linksData, isLoading, error, refetch } = useQuery({
-    queryKey: ['links', page, limit, searchTerm],
+    queryKey: ['links', workspaceDealershipId, page, limit, searchTerm],
     queryFn: () => linksApi.getLinks({
       page,
       per_page: limit,
-      search: searchTerm
+      search: searchTerm,
+      dealership_id: workspaceDealershipId || undefined,
     }),
     placeholderData: (prev) => prev,
   });
@@ -101,7 +110,13 @@ export const LinksPage: React.FC = () => {
   });
 
   const resetForm = () => {
-    setFormData({ title: '', url: '', description: '', category: 'general' });
+    setFormData({
+      title: '',
+      url: '',
+      description: '',
+      category: 'general',
+      dealership_id: workspaceDealershipId || 0,
+    });
     setSelectedLink(null);
   };
 
@@ -144,7 +159,14 @@ export const LinksPage: React.FC = () => {
   }, {} as Record<string, Link[]>);
 
   const handleCreate = () => {
-    resetForm();
+    setFormData({
+      title: '',
+      url: '',
+      description: '',
+      category: 'general',
+      dealership_id: workspaceDealershipId || 0,
+    });
+    setSelectedLink(null);
     setIsModalOpen(true);
   };
 
@@ -155,6 +177,7 @@ export const LinksPage: React.FC = () => {
       url: link.url,
       description: link.description || '',
       category: link.category || 'general',
+      dealership_id: link.dealership_id,
     });
     setIsModalOpen(true);
   };
@@ -165,6 +188,8 @@ export const LinksPage: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.dealership_id) return;
+
     if (selectedLink) {
       updateMutation.mutate({ id: selectedLink.id, data: formData });
     } else {
@@ -334,6 +359,11 @@ export const LinksPage: React.FC = () => {
                             <Badge variant="gray">
                               {getCategoryLabel(link.category || 'general')}
                             </Badge>
+                            {link.dealership?.name && (
+                              <Badge variant="info">
+                                {link.dealership.name}
+                              </Badge>
+                            )}
                           </div>
                           {link.description && (
                             <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">{link.description}</p>
@@ -418,6 +448,23 @@ export const LinksPage: React.FC = () => {
                 />
               </FormField>
 
+              <FormField label="Автосалон" required>
+                <DealershipSelector
+                  value={formData.dealership_id || null}
+                  onChange={(dealershipId) => setFormData({
+                    ...formData,
+                    dealership_id: dealershipId || 0,
+                  })}
+                  placeholder="Выберите автосалон"
+                  required
+                />
+                {currentDealership && formData.dealership_id === currentDealership.id && (
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    Используется текущий автосалон: {currentDealership.name}
+                  </p>
+                )}
+              </FormField>
+
               <FormField label="Описание">
                 <Textarea
                   value={formData.description}
@@ -433,6 +480,7 @@ export const LinksPage: React.FC = () => {
               type="submit"
               variant="primary"
               isLoading={createMutation.isPending || updateMutation.isPending}
+              disabled={!formData.dealership_id}
             >
               {selectedLink ? 'Сохранить' : 'Создать'}
             </Button>

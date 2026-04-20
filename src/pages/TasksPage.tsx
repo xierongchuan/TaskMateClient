@@ -150,6 +150,12 @@ export const TasksPage: React.FC = () => {
       return tasksApi.getTasks(cleanedFilters);
     },
     refetchInterval: 30000,
+    onError: (err: unknown) => {
+      const status = (err as { response?: { status?: number } })?.response?.status;
+      if (status === 403) {
+        showToast({ type: 'error', message: 'У вас нет доступа к выбранному автосалону' });
+      }
+    },
   });
 
   const deleteMutation = useMutation({

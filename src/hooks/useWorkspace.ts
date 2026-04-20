@@ -23,7 +23,25 @@ export const useWorkspace = () => {
       return dealershipsData?.data || [];
     }
 
-    // Для остальных - только назначенные
+    // Для менеджера/наблюдателя/сотрудника — составляем список доступных автосалонов
+    // Берём приоритетно полный список из API (если загружен), отфильтрованный по ID из user
+    const ids = new Set<number>();
+    if (user.dealership_id) ids.add(user.dealership_id);
+    if (user.dealerships && user.dealerships.length > 0) {
+      user.dealerships.forEach((d) => ids.add(d.id));
+    }
+
+    if (dealershipsData?.data && dealershipsData.data.length > 0) {
+      const filtered = dealershipsData.data.filter((d) => ids.has(d.id));
+      if (filtered.length > 0) return filtered;
+    }
+
+    // Фоллбек: если у пользователя есть вложенный объект dealership (id+name)
+    if (user.dealership) return [user.dealership];
+
+    // Если есть только id — возвращаем минимум данных, чтобы компонент мог отобразиться
+    if (user.dealership_id) return [{ id: user.dealership_id, name: `Автосалон ${user.dealership_id}` }];
+
     return user.dealerships || [];
   }, [user, dealershipsData?.data]);
 
@@ -52,8 +70,8 @@ export const useWorkspace = () => {
     return availableDealerships.length > 1 || user.role === 'owner';
   }, [user, availableDealerships]);
 
-  // Может ли выбрать "Все автосалоны"
-  const canSelectAll = user?.role === 'owner';
+  // Может ли выбрать "Все автосалоны" (owner всегда, manager — если у него несколько автосалонов)
+  const canSelectAll = user?.role === 'owner' || (user?.role === 'manager' && availableDealerships.length > 1);
 
   return {
     dealershipId: selectedDealershipId,

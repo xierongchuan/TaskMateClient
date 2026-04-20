@@ -4,7 +4,7 @@ import type { ApiSuccessResponse, PaginatedResponse } from '../types/api';
 
 export interface DelegationsFilters {
   status?: string;
-  direction?: 'incoming' | 'outgoing';
+  direction?: 'incoming' | 'outgoing' | 'all';
   task_id?: number;
   per_page?: number;
   page?: number;
@@ -19,11 +19,11 @@ export const delegationsApi = {
     return response.data.data;
   },
 
-  getDelegations: async (filters?: DelegationsFilters): Promise<TaskDelegation[]> => {
+  getDelegations: async (filters?: DelegationsFilters): Promise<PaginatedResponse<TaskDelegation>> => {
     const response = await apiClient.get<PaginatedResponse<TaskDelegation>>('/task-delegations', {
       params: filters,
     });
-    return response.data.data;
+    return response.data;
   },
 
   getDelegation: async (id: number): Promise<TaskDelegation> => {

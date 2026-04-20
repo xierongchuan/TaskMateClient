@@ -13,6 +13,7 @@ import { DelegateTaskModal } from '../components/tasks/DelegateTaskModal';
 import { UserSelector } from '../components/common/UserSelector';
 import { MultiFileUpload } from '../components/ui/MultiFileUpload';
 import type { Task } from '../types/task';
+import type { PaginatedResponse } from '../types/api';
 import { formatDateTime, formatDateTimeShort, getDeadlineStatus } from '../utils/dateTime';
 import {
   PlusIcon,
@@ -112,7 +113,7 @@ export const TasksPage: React.FC = () => {
     }
   }, [searchParams, setSearchParams, permissions.canManageTasks]);
 
-  const { data: tasksData, isLoading, error, refetch } = useQuery({
+  const { data: tasksData, isLoading, error, refetch } = useQuery<PaginatedResponse<Task>>({
     queryKey: ['tasks', filters, workspaceDealershipId, page, limit],
     queryFn: () => {
       const cleanedFilters: {
@@ -150,12 +151,6 @@ export const TasksPage: React.FC = () => {
       return tasksApi.getTasks(cleanedFilters);
     },
     refetchInterval: 30000,
-    onError: (err: unknown) => {
-      const status = (err as { response?: { status?: number } })?.response?.status;
-      if (status === 403) {
-        showToast({ type: 'error', message: 'У вас нет доступа к выбранному автосалону' });
-      }
-    },
   });
 
   const deleteMutation = useMutation({
@@ -320,7 +315,7 @@ export const TasksPage: React.FC = () => {
       await queryClient.invalidateQueries({ queryKey: ['tasks'] });
       const freshData = await refetch();
       if (selectedTask && freshData.data?.data) {
-        const updated = freshData.data.data.find(t => t.id === selectedTask.id);
+        const updated = freshData.data.data.find((t: Task) => t.id === selectedTask.id);
         if (updated) setSelectedTask(updated);
       }
     },
@@ -337,7 +332,7 @@ export const TasksPage: React.FC = () => {
       await queryClient.invalidateQueries({ queryKey: ['tasks'] });
       const freshData = await refetch();
       if (selectedTask && freshData.data?.data) {
-        const updated = freshData.data.data.find(t => t.id === selectedTask.id);
+        const updated = freshData.data.data.find((t: Task) => t.id === selectedTask.id);
         if (updated) setSelectedTask(updated);
       }
     },
@@ -762,7 +757,7 @@ export const TasksPage: React.FC = () => {
           {viewMode === 'list' && (
             <Card>
               <Card.Body className="space-y-4">
-                {tasksData?.data.map((task) => (
+                {tasksData?.data.map((task: Task) => (
                   <div key={task.id} className={`p-5 rounded-xl border hover:shadow-sm transition-all ${getTaskCardClass(task)}`}>
                     <div className="flex items-start justify-between">
                       <div className="flex-1 min-w-0 pr-4">
@@ -821,7 +816,7 @@ export const TasksPage: React.FC = () => {
 
                         {task.tags && task.tags.length > 0 && (
                           <div className="mt-3 flex flex-wrap gap-2">
-                            {task.tags.map((tag, idx) => (
+                            {task.tags.map((tag: string, idx: number) => (
                               <Tag key={idx} label={tag} />
                             ))}
                           </div>
@@ -868,7 +863,7 @@ export const TasksPage: React.FC = () => {
           {/* Grid View */}
           {viewMode === 'grid' && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {tasksData?.data.map((task) => (
+              {tasksData?.data.map((task: Task) => (
                 <div key={task.id} className={`p-6 ${getTaskCardClass(task)}`}>
                   <div className="flex items-start justify-between mb-3">
                     <ClickableTitle onClick={() => handleView(task)}>
@@ -913,7 +908,7 @@ export const TasksPage: React.FC = () => {
 
                   {task.tags && task.tags.length > 0 && (
                     <div className="mb-4 flex flex-wrap gap-1">
-                      {task.tags.map((tag, idx) => (
+                      {task.tags.map((tag: string, idx: number) => (
                         <Tag key={idx} label={tag} />
                       ))}
                     </div>

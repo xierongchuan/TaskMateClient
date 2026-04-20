@@ -15,6 +15,7 @@ import {
   FolderIcon,
   WrenchScrewdriverIcon,
   BriefcaseIcon,
+  ArrowPathRoundedSquareIcon,
 } from '@heroicons/react/24/outline';
 import type { NavGroup, NavigationConfig } from '../types/navigation';
 
@@ -53,6 +54,12 @@ export const createNavigationConfig = (
           path: '/tasks',
           label: 'Задачи',
           icon: ClipboardDocumentListIcon,
+        },
+        {
+          id: 'delegations',
+          path: '/delegations',
+          label: 'Делегирование',
+          icon: ArrowPathRoundedSquareIcon,
         },
         {
           id: 'my-history',

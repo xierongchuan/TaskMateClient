@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChevronDownIcon, BuildingOffice2Icon, CheckIcon } from '@heroicons/react/24/outline';
 import { useWorkspace } from '../../hooks/useWorkspace';
+import type { Dealership } from '../../types/dealership';
 
 export const WorkspaceSwitcher: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -142,11 +143,11 @@ export const WorkspaceSwitcher: React.FC = () => {
                       <div className="text-sm font-medium text-gray-900 dark:text-white truncate">
                         {dealership.name}
                       </div>
-                      {'address' in dealership && dealership.address && (
-                        <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                          {dealership.address}
-                        </div>
-                      )}
+                       {'address' in dealership && (dealership as Dealership).address && (
+                         <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                           {(dealership as Dealership).address}
+                         </div>
+                       )}
                     </div>
                   </div>
                   {dealershipId === dealership.id && (

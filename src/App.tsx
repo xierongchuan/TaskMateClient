@@ -21,6 +21,7 @@ import { ReportsPage } from './pages/ReportsPage';
 import { DealershipsPage } from './pages/DealershipsPage';
 import { NotificationSettingsPage } from './pages/NotificationSettingsPage';
 import { ProfilePage } from './pages/ProfilePage';
+import { DelegationsPage } from './pages/DelegationsPage';
 import { debugAuth } from './utils/debug';
 
 
@@ -130,6 +131,7 @@ function App() {
                 <Route path="dashboard" element={<DashboardPage />} />
                 <Route path="profile" element={<ProfilePage />} />
                 <Route path="tasks" element={<TasksPage />} />
+                <Route path="delegations" element={<DelegationsPage />} />
                 <Route path="my-history" element={<MyHistoryPage />} />
                 <Route
                   path="task-generators"

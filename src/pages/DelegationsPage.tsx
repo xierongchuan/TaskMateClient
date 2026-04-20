@@ -77,6 +77,17 @@ export const DelegationsPage: React.FC = () => {
     placeholderData: (prev) => prev,
   });
 
+  // Отдельный запрос для счетчика входящих pending запросов
+  const { data: incomingCountData } = useQuery({
+    queryKey: ['delegations-incoming-count'],
+    queryFn: () => delegationsApi.getDelegations({
+      status: 'pending',
+      direction: 'incoming',
+      per_page: 1,
+    }),
+    placeholderData: (prev) => prev,
+  });
+
   // Мутации
   const acceptMutation = useMutation({
     mutationFn: (delegationId: number) => delegationsApi.acceptDelegation(delegationId),
@@ -194,60 +205,89 @@ export const DelegationsPage: React.FC = () => {
       (delegation.from_user_id === permissions.userId || permissions.canCancelDelegations);
 
     return (
-      <Card key={delegation.id} className={`${isMobile ? 'p-3' : 'p-4'}`}>
-        <div className="flex flex-col gap-4">
-          {/* Заголовок и статус */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-            <div className="flex items-center gap-2 flex-wrap">
+      <Card key={delegation.id} className="overflow-hidden">
+        {/* Заголовок карточки */}
+        <div className="px-4 py-3 sm:px-6 sm:py-4 border-b border-gray-100 dark:border-gray-700">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex-1 min-w-0">
+              <h3 className="font-semibold text-base sm:text-lg text-gray-900 dark:text-white truncate mb-1">
+                Задача #{delegation.task?.id}
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-300 truncate">
+                {delegation.task?.title || 'Задача не найдена'}
+              </p>
+            </div>
+            <div className="flex flex-col items-end gap-2 flex-shrink-0">
               {getStatusBadge(delegation.status)}
-              <span className={`${isMobile ? 'text-xs' : 'text-sm'} text-gray-500`}>
-                #{delegation.id} • {formatDateTime(delegation.created_at)}
+              <span className="text-xs text-gray-500 whitespace-nowrap">
+                {formatDateTime(delegation.created_at)}
               </span>
             </div>
           </div>
+        </div>
 
-          {/* Основная информация */}
-          <div className="flex-1 min-w-0">
-            <h3 className={`font-semibold ${isMobile ? 'text-base' : 'text-lg'} mb-2`}>
-              Задача #{delegation.task?.id}: {delegation.task?.title || 'Задача не найдена'}
-            </h3>
-
-            <div className={`${isMobile ? 'text-sm' : 'text-sm'} text-gray-600 mb-3`}>
+        {/* Основное содержимое */}
+        <div className="px-4 py-4 sm:px-6 sm:py-5">
+          <div className="space-y-4">
+            {/* Информация о делегировании */}
+            <div className="flex items-center gap-2 text-sm">
               {isIncoming ? (
-                <span>
-                  <strong>{delegation.from_user?.full_name || 'Сотрудник'}</strong> предлагает вам взять задачу
-                </span>
+                <>
+                  <ArrowLeftIcon className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                  <span className="text-gray-600 dark:text-gray-300">
+                    <strong className="text-gray-900 dark:text-white">{delegation.from_user?.full_name || 'Сотрудник'}</strong> предлагает вам взять эту задачу
+                  </span>
+                </>
               ) : (
-                <span>
-                  Вы предложили задачу <strong>{delegation.to_user?.full_name || 'сотруднику'}</strong>
-                </span>
+                <>
+                  <ArrowRightIcon className="w-4 h-4 text-green-500 flex-shrink-0" />
+                  <span className="text-gray-600 dark:text-gray-300">
+                    Вы предложили задачу <strong className="text-gray-900 dark:text-white">{delegation.to_user?.full_name || 'сотруднику'}</strong>
+                  </span>
+                </>
               )}
             </div>
 
+            {/* Причина */}
             {delegation.reason && (
-              <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg mb-3">
-                <div className={`${isMobile ? 'text-xs' : 'text-sm'} text-gray-600 dark:text-gray-400 mb-1`}>Причина:</div>
-                <div className={`${isMobile ? 'text-sm' : 'text-sm'}`}>{delegation.reason}</div>
+              <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 border border-blue-200 dark:border-blue-800">
+                <div className="flex items-start gap-2">
+                  <div className="w-1 h-1 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                  <div>
+                    <div className="text-xs font-medium text-blue-700 dark:text-blue-300 mb-1">Причина делегирования:</div>
+                    <div className="text-sm text-blue-800 dark:text-blue-200">{delegation.reason}</div>
+                  </div>
+                </div>
               </div>
             )}
 
+            {/* Причина отклонения */}
             {delegation.rejection_reason && delegation.status === 'rejected' && (
-              <div className="bg-red-50 dark:bg-red-900/20 p-3 rounded-lg mb-3">
-                <div className={`${isMobile ? 'text-xs' : 'text-sm'} text-red-600 dark:text-red-400 mb-1`}>Причина отклонения:</div>
-                <div className={`${isMobile ? 'text-sm' : 'text-sm'} text-red-700 dark:text-red-300`}>{delegation.rejection_reason}</div>
+              <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-3 border border-red-200 dark:border-red-800">
+                <div className="flex items-start gap-2">
+                  <div className="w-1 h-1 bg-red-500 rounded-full mt-2 flex-shrink-0"></div>
+                  <div>
+                    <div className="text-xs font-medium text-red-700 dark:text-red-300 mb-1">Причина отклонения:</div>
+                    <div className="text-sm text-red-800 dark:text-red-200">{delegation.rejection_reason}</div>
+                  </div>
+                </div>
               </div>
             )}
 
+            {/* Дата ответа */}
             {delegation.responded_at && (
-              <div className={`${isMobile ? 'text-xs' : 'text-xs'} text-gray-500`}>
+              <div className="text-xs text-gray-500 flex items-center gap-1">
+                <ClockIcon className="w-3 h-3" />
                 Реагировали: {formatDateTime(delegation.responded_at)}
               </div>
             )}
           </div>
+        </div>
 
-          {/* Действия */}
-          {delegation.status === 'pending' && (canAccept || canReject || canCancel) && (
-            <div className={`flex ${isMobile ? 'flex-col gap-2' : 'flex-row gap-2 sm:flex-shrink-0'} pt-2 border-t border-gray-100 dark:border-gray-700`}>
+        {/* Действия */}
+        {delegation.status === 'pending' && (canAccept || canReject || canCancel) && (
+          <div className="px-4 py-3 sm:px-6 sm:py-4 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-100 dark:border-gray-700">
+            <div className={`flex ${isMobile ? 'flex-col gap-2' : 'flex-row gap-3'} justify-end`}>
               {canAccept && (
                 <Button
                   variant="primary"
@@ -287,8 +327,8 @@ export const DelegationsPage: React.FC = () => {
                 </Button>
               )}
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </Card>
     );
   };
@@ -322,12 +362,12 @@ export const DelegationsPage: React.FC = () => {
                 <Icon className={`w-5 h-5 ${isActive ? 'text-accent-500 dark:text-accent-400' : 'opacity-70'}`} />
                 <span className="hidden sm:inline">{getTabLabel(tab)}</span>
                 {tab === 'incoming' &&
-                  delegationsData &&
-                  delegationsData?.total > 0 && (
+                  incomingCountData &&
+                  incomingCountData?.total > 0 && (
                     <span className={`ml-1 bg-accent-500 text-white text-xs px-2 py-0.5 rounded-full min-w-fit ${
                       isActive ? 'bg-accent-600' : ''
                     }`}>
-                      {delegationsData.total}
+                      {incomingCountData.total}
                     </span>
                   )}
               </button>

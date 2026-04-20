@@ -96,9 +96,18 @@ export const MyHistoryPage: React.FC = () => {
     return task.responses?.find(r => r.user_id === permissions.userId);
   };
 
-  const handleViewDetails = (task: Task) => {
-    setSelectedTask(task);
-    setIsDetailsOpen(true);
+  const handleViewDetails = async (task: Task) => {
+    try {
+      const fresh = await tasksApi.getTask(task.id);
+      setSelectedTask(fresh);
+    } catch (err) {
+      // fallback to cached task if fetch fails
+      // eslint-disable-next-line no-console
+      console.error('Failed to fetch task details', err);
+      setSelectedTask(task);
+    } finally {
+      setIsDetailsOpen(true);
+    }
   };
 
   return (
@@ -266,7 +275,10 @@ export const MyHistoryPage: React.FC = () => {
       {/* Детали задачи */}
       <TaskDetailsModal
         isOpen={isDetailsOpen}
-        onClose={() => setIsDetailsOpen(false)}
+        onClose={() => {
+          setIsDetailsOpen(false);
+          setSelectedTask(null);
+        }}
         task={selectedTask}
       />
     </PageContainer>

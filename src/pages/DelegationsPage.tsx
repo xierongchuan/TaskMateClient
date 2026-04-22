@@ -248,6 +248,54 @@ export const DelegationsPage: React.FC = () => {
               )}
             </div>
 
+            {/* Описание задачи */}
+            {delegation.task?.description && (
+              <div className="text-sm text-gray-600 dark:text-gray-300 border-l-2 border-blue-500 pl-3">
+                <div className="font-medium text-gray-700 dark:text-gray-200 mb-1">Описание задачи:</div>
+                <div className="whitespace-pre-wrap">{delegation.task.description}</div>
+              </div>
+            )}
+
+            {/* Детали задачи */}
+            {delegation.task && (
+              <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3 space-y-2">
+                <div className="flex flex-wrap gap-2 text-xs">
+                  {delegation.task.priority && (
+                    <span className={`px-2 py-0.5 rounded-full ${
+                      delegation.task.priority === 'high' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
+                      delegation.task.priority === 'medium' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' :
+                      'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                    }`}>
+                      {delegation.task.priority === 'high' ? '🔴 Высокий' : delegation.task.priority === 'medium' ? '🟡 Средний' : '🟢 Низкий'}
+                    </span>
+                  )}
+                  {delegation.task.task_type && (
+                    <span className="px-2 py-0.5 rounded-full bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
+                      {delegation.task.task_type === 'group' ? '👥 Групповая' : '👤 Индивидуальная'}
+                    </span>
+                  )}
+                  {delegation.task.response_type && (
+                    <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+                      {delegation.task.response_type === 'completion' ? '✅ Выполнение' :
+                       delegation.task.response_type === 'completion_with_proof' ? '📎 С доказательствами' :
+                       '📢 Уведомление'}
+                    </span>
+                  )}
+                </div>
+                {delegation.task.deadline && (
+                  <div className="text-xs text-gray-500 flex items-center gap-1">
+                    <ClockIcon className="w-3 h-3" />
+                    Дедлайн: {formatDateTime(delegation.task.deadline)}
+                  </div>
+                )}
+                {delegation.task.dealership && (
+                  <div className="text-xs text-gray-500">
+                    🏢 {delegation.task.dealership.name}
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Причина */}
             {delegation.reason && (
               <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 border border-blue-200 dark:border-blue-800">

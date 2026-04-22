@@ -59,7 +59,18 @@ export interface TaskDelegation {
   updated_at: string;
   from_user?: { id: number; full_name: string };
   to_user?: { id: number; full_name: string };
-  task?: { id: number; title: string; deadline: string | null; priority: string };
+  task?: {
+    id: number;
+    title: string;
+    description: string | null;
+    comment: string | null;
+    deadline: string | null;
+    priority: string;
+    task_type: string;
+    response_type: string;
+    status: string;
+    dealership?: { id: number; name: string };
+  };
 }
 
 export interface CompletionProgress {

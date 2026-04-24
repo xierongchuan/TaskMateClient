@@ -1,6 +1,18 @@
 import apiClient from './client';
 import type { ShiftSchedule } from '../types/shift';
 
+export interface ShiftScheduleApiResponse {
+  success?: boolean;
+  message?: string;
+  data: ShiftSchedule[];
+}
+
+export interface ShiftScheduleItemApiResponse {
+  success?: boolean;
+  message?: string;
+  data: ShiftSchedule;
+}
+
 export interface CreateShiftScheduleRequest {
   dealership_id: number;
   name: string;
@@ -19,28 +31,38 @@ export interface UpdateShiftScheduleRequest {
 }
 
 export const shiftSchedulesApi = {
-  getAll: async (dealershipId?: number, activeOnly?: boolean): Promise<{ data: ShiftSchedule[] }> => {
-    const response = await apiClient.get<{ data: ShiftSchedule[] }>('/shift-schedules', {
+  getAll: async (
+    dealershipId?: number,
+    activeOnly?: boolean,
+    deletedOnly?: boolean,
+  ): Promise<ShiftScheduleApiResponse> => {
+    const response = await apiClient.get<ShiftScheduleApiResponse>('/shift-schedules', {
       params: {
         dealership_id: dealershipId,
-        active_only: activeOnly ? 'true' : undefined,
+        active_only: !deletedOnly && activeOnly ? 'true' : undefined,
+        deleted_only: deletedOnly ? 'true' : undefined,
       },
     });
     return response.data;
   },
 
-  get: async (id: number): Promise<{ data: ShiftSchedule }> => {
-    const response = await apiClient.get<{ data: ShiftSchedule }>(`/shift-schedules/${id}`);
+  get: async (id: number): Promise<ShiftScheduleItemApiResponse> => {
+    const response = await apiClient.get<ShiftScheduleItemApiResponse>(`/shift-schedules/${id}`);
     return response.data;
   },
 
-  create: async (data: CreateShiftScheduleRequest): Promise<{ data: ShiftSchedule }> => {
-    const response = await apiClient.post<{ data: ShiftSchedule }>('/shift-schedules', data);
+  create: async (data: CreateShiftScheduleRequest): Promise<ShiftScheduleItemApiResponse> => {
+    const response = await apiClient.post<ShiftScheduleItemApiResponse>('/shift-schedules', data);
     return response.data;
   },
 
-  update: async (id: number, data: UpdateShiftScheduleRequest): Promise<{ data: ShiftSchedule }> => {
-    const response = await apiClient.put<{ data: ShiftSchedule }>(`/shift-schedules/${id}`, data);
+  update: async (id: number, data: UpdateShiftScheduleRequest): Promise<ShiftScheduleItemApiResponse> => {
+    const response = await apiClient.put<ShiftScheduleItemApiResponse>(`/shift-schedules/${id}`, data);
+    return response.data;
+  },
+
+  restore: async (id: number): Promise<ShiftScheduleItemApiResponse> => {
+    const response = await apiClient.post<ShiftScheduleItemApiResponse>(`/shift-schedules/${id}/restore`);
     return response.data;
   },
 

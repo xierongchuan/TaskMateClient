@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useShiftConfig, useNotificationConfig, useArchiveConfig, useUpdateShiftConfig, useUpdateNotificationConfig, useUpdateArchiveConfig, useDealershipSettings, useTaskConfig, useUpdateTaskConfig, useSetting, useUpdateSetting, useUpdateSettingByKey } from '../hooks/useSettings';
 import { useDealership, useUpdateDealership } from '../hooks/useDealerships';
-import { useShiftSchedules, useCreateShiftSchedule, useUpdateShiftSchedule, useDeleteShiftSchedule } from '../hooks/useShiftSchedules';
+import { useShiftSchedules, useArchivedShiftSchedules, useCreateShiftSchedule, useUpdateShiftSchedule, useDeleteShiftSchedule, useRestoreShiftSchedule } from '../hooks/useShiftSchedules';
 import { useTheme, ACCENT_COLOR_OPTIONS } from '../context/ThemeContext';
 import { usePermissions } from '../hooks/usePermissions';
 import { useWorkspace } from '../hooks/useWorkspace';
 import { YearCalendar, type YearCalendarRef } from '../components/settings/YearCalendar';
-import { getCurrentYear } from '../utils/dateTime';
+import { formatDateTime, getCurrentYear } from '../utils/dateTime';
 import type { NotificationConfig, ArchiveConfig, ShiftConfig, TaskConfig } from '../types/setting';
+import type { ShiftSchedule } from '../types/shift';
 import { TIMEZONES } from '../types/dealership';
 
 // UI Components
@@ -72,6 +73,9 @@ export const SettingsPage: React.FC = () => {
   const [newScheduleStart, setNewScheduleStart] = useState('09:00');
   const [newScheduleEnd, setNewScheduleEnd] = useState('18:00');
   const [showAddSchedule, setShowAddSchedule] = useState(false);
+  const [shiftSchedulesView, setShiftSchedulesView] = useState<'active' | 'archived'>('active');
+  const [restoreCandidate, setRestoreCandidate] = useState<ShiftSchedule | null>(null);
+  const [archivedDuplicateCandidate, setArchivedDuplicateCandidate] = useState<ShiftSchedule | null>(null);
 
   // Initialize notification config with default values
   const [notificationConfig, setNotificationConfig] = useState<NotificationConfig>({
@@ -121,9 +125,11 @@ export const SettingsPage: React.FC = () => {
   const { data: globalTimezoneData, isLoading: globalTimezoneLoading } = useSetting('global_timezone');
   const { data: dealershipData, isLoading: dealershipLoading } = useDealership(selectedDealershipId || 0);
   const { data: shiftSchedulesData, isLoading: shiftSchedulesLoading } = useShiftSchedules(selectedDealershipId);
+  const { data: archivedShiftSchedulesData, isLoading: archivedShiftSchedulesLoading } = useArchivedShiftSchedules(selectedDealershipId);
   const createShiftScheduleMutation = useCreateShiftSchedule();
   const updateShiftScheduleMutation = useUpdateShiftSchedule();
   const deleteShiftScheduleMutation = useDeleteShiftSchedule();
+  const restoreShiftScheduleMutation = useRestoreShiftSchedule();
 
   // Timezone state for current dealership
   const [dealershipTimezone, setDealershipTimezone] = useState('+05:00');
@@ -386,8 +392,56 @@ export const SettingsPage: React.FC = () => {
     );
   }
 
-  const isLoading = shiftConfigLoading || notificationConfigLoading || archiveConfigLoading || taskConfigLoading || maintenanceModeLoading || dealershipLoading || globalTimezoneLoading || shiftSchedulesLoading;
-  const isSaving = updateShiftConfigMutation.isPending || updateNotificationConfigMutation.isPending || updateArchiveConfigMutation.isPending || updateTaskConfigMutation.isPending || updateSettingMutation.isPending || updateSettingByKeyMutation.isPending || updateDealershipMutation.isPending || calendarSaving || createShiftScheduleMutation.isPending || updateShiftScheduleMutation.isPending || deleteShiftScheduleMutation.isPending;
+  const activeShiftSchedules = shiftSchedulesData?.data || [];
+  const archivedShiftSchedules = archivedShiftSchedulesData?.data || [];
+  const isLoading = shiftConfigLoading || notificationConfigLoading || archiveConfigLoading || taskConfigLoading || maintenanceModeLoading || dealershipLoading || globalTimezoneLoading || shiftSchedulesLoading || archivedShiftSchedulesLoading;
+  const isSaving = updateShiftConfigMutation.isPending || updateNotificationConfigMutation.isPending || updateArchiveConfigMutation.isPending || updateTaskConfigMutation.isPending || updateSettingMutation.isPending || updateSettingByKeyMutation.isPending || updateDealershipMutation.isPending || calendarSaving || createShiftScheduleMutation.isPending || updateShiftScheduleMutation.isPending || deleteShiftScheduleMutation.isPending || restoreShiftScheduleMutation.isPending;
+
+  const handleRestoreSchedule = (scheduleId: number, successMessage: string) => {
+    restoreShiftScheduleMutation.mutate(scheduleId, {
+      onSuccess: () => {
+        setRestoreCandidate(null);
+        setArchivedDuplicateCandidate(null);
+        setNewScheduleName('');
+        setNewScheduleStart('09:00');
+        setNewScheduleEnd('18:00');
+        setShowAddSchedule(false);
+        showToast({ type: 'success', message: successMessage });
+      },
+      onError: (error: any) => {
+        showToast({ type: 'error', message: error?.response?.data?.message || 'Ошибка восстановления смены' });
+      },
+    });
+  };
+
+  const handleCreateSchedule = () => {
+    if (!selectedDealershipId) {
+      return;
+    }
+
+    createShiftScheduleMutation.mutate({
+      dealership_id: selectedDealershipId,
+      name: newScheduleName.trim(),
+      start_time: newScheduleStart,
+      end_time: newScheduleEnd,
+    }, {
+      onSuccess: () => {
+        setNewScheduleName('');
+        setNewScheduleStart('09:00');
+        setNewScheduleEnd('18:00');
+        setShowAddSchedule(false);
+        showToast({ type: 'success', message: 'Смена создана' });
+      },
+      onError: (error: any) => {
+        if (error?.response?.status === 409 && error?.response?.data?.error_code === 'archived_duplicate' && error?.response?.data?.archived_schedule) {
+          setArchivedDuplicateCandidate(error.response.data.archived_schedule as ShiftSchedule);
+          return;
+        }
+
+        showToast({ type: 'error', message: error?.response?.data?.message || 'Ошибка создания смены' });
+      },
+    });
+  };
 
   return (
     <PageContainer>
@@ -739,6 +793,28 @@ export const SettingsPage: React.FC = () => {
                         )}
                       </div>
 
+                      {selectedDealershipId && (
+                        <div className="inline-flex rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-1">
+                          {[
+                            { id: 'active', label: `Активные (${activeShiftSchedules.length})` },
+                            { id: 'archived', label: `Архив (${archivedShiftSchedules.length})` },
+                          ].map((tab) => (
+                            <button
+                              key={tab.id}
+                              type="button"
+                              onClick={() => setShiftSchedulesView(tab.id as 'active' | 'archived')}
+                              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                                shiftSchedulesView === tab.id
+                                  ? 'bg-white dark:bg-gray-700 text-accent-600 dark:text-accent-400 shadow-sm'
+                                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                              }`}
+                            >
+                              {tab.label}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+
                       {!selectedDealershipId && (
                         <EmptyState
                           title="Выберите автосалон"
@@ -747,7 +823,7 @@ export const SettingsPage: React.FC = () => {
                       )}
 
                       {/* Add new schedule form */}
-                      {showAddSchedule && selectedDealershipId && (
+                      {showAddSchedule && selectedDealershipId && shiftSchedulesView === 'active' && (
                         <Card>
                           <Card.Body>
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
@@ -773,25 +849,7 @@ export const SettingsPage: React.FC = () => {
                                 type="button"
                                 variant="primary"
                                 disabled={!newScheduleName.trim() || createShiftScheduleMutation.isPending}
-                                onClick={() => {
-                                  createShiftScheduleMutation.mutate({
-                                    dealership_id: selectedDealershipId,
-                                    name: newScheduleName.trim(),
-                                    start_time: newScheduleStart,
-                                    end_time: newScheduleEnd,
-                                  }, {
-                                    onSuccess: () => {
-                                      setNewScheduleName('');
-                                      setNewScheduleStart('09:00');
-                                      setNewScheduleEnd('18:00');
-                                      setShowAddSchedule(false);
-                                      showToast({ type: 'success', message: 'Смена создана' });
-                                    },
-                                    onError: (error: any) => {
-                                      showToast({ type: 'error', message: error?.response?.data?.message || 'Ошибка создания смены' });
-                                    },
-                                  });
-                                }}
+                                onClick={handleCreateSchedule}
                               >
                                 Создать
                               </Button>
@@ -801,11 +859,11 @@ export const SettingsPage: React.FC = () => {
                       )}
 
                       {/* Existing schedules */}
-                      {selectedDealershipId && (shiftSchedulesLoading ? (
+                      {selectedDealershipId && shiftSchedulesView === 'active' && (shiftSchedulesLoading ? (
                         <Skeleton variant="list" count={2} />
                       ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {(shiftSchedulesData?.data || []).map((schedule, index) => (
+                          {activeShiftSchedules.map((schedule, index) => (
                             <Card key={schedule.id}>
                               <Card.Body>
                                 <div className="flex items-center justify-between mb-4 pb-2 border-b border-gray-100 dark:border-gray-700">
@@ -869,12 +927,63 @@ export const SettingsPage: React.FC = () => {
                               </Card.Body>
                             </Card>
                           ))}
-                          {selectedDealershipId && (shiftSchedulesData?.data || []).length === 0 && (
+                          {selectedDealershipId && activeShiftSchedules.length === 0 && (
                             <p className="col-span-2 text-center text-gray-500 dark:text-gray-400 py-8">
                               Нет настроенных смен. Нажмите «Добавить смену» для создания.
                             </p>
                           )}
                         </div>
+                      ))}
+
+                      {selectedDealershipId && shiftSchedulesView === 'archived' && (archivedShiftSchedulesLoading ? (
+                        <Skeleton variant="list" count={2} />
+                      ) : archivedShiftSchedules.length > 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {archivedShiftSchedules.map((schedule) => (
+                            <Card key={schedule.id}>
+                              <Card.Body>
+                                <div className="flex items-start justify-between gap-4 mb-4 pb-3 border-b border-gray-100 dark:border-gray-700">
+                                  <div>
+                                    <h4 className="font-medium text-gray-900 dark:text-white flex items-center">
+                                      {schedule.name}
+                                      {schedule.is_night_shift && (
+                                        <MoonIcon className="w-4 h-4 ml-1 text-indigo-400" title="Ночная смена" />
+                                      )}
+                                    </h4>
+                                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                      Удалена: {formatDateTime(schedule.deleted_at)}
+                                    </p>
+                                  </div>
+                                  <Button
+                                    type="button"
+                                    size="sm"
+                                    variant="primary"
+                                    disabled={restoreShiftScheduleMutation.isPending}
+                                    onClick={() => setRestoreCandidate(schedule)}
+                                  >
+                                    Восстановить
+                                  </Button>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60 px-4 py-3">
+                                    <div className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Начало</div>
+                                    <div className="mt-1 font-medium text-gray-900 dark:text-white">{schedule.start_time?.substring(0, 5) || '—'}</div>
+                                  </div>
+                                  <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60 px-4 py-3">
+                                    <div className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Конец</div>
+                                    <div className="mt-1 font-medium text-gray-900 dark:text-white">{schedule.end_time?.substring(0, 5) || '—'}</div>
+                                  </div>
+                                </div>
+                              </Card.Body>
+                            </Card>
+                          ))}
+                        </div>
+                      ) : (
+                        <EmptyState
+                          title="Архив пуст"
+                          description="Удалённые расписания смен появятся здесь и их можно будет восстановить."
+                        />
                       ))}
                     </div>
 
@@ -1100,6 +1209,30 @@ export const SettingsPage: React.FC = () => {
         variant={confirmState.variant}
         onConfirm={handleConfirm}
         onCancel={handleCancel}
+      />
+
+      <ConfirmDialog
+        isOpen={restoreCandidate !== null}
+        title="Восстановить расписание смены?"
+        message={restoreCandidate ? `Расписание «${restoreCandidate.name}» снова появится в активном списке.` : ''}
+        confirmText="Восстановить"
+        cancelText="Отмена"
+        variant="info"
+        isLoading={restoreShiftScheduleMutation.isPending}
+        onConfirm={() => restoreCandidate && handleRestoreSchedule(restoreCandidate.id, 'Расписание смены восстановлено')}
+        onCancel={() => setRestoreCandidate(null)}
+      />
+
+      <ConfirmDialog
+        isOpen={archivedDuplicateCandidate !== null}
+        title="Расписание уже есть в архиве"
+        message={archivedDuplicateCandidate ? `Расписание «${archivedDuplicateCandidate.name}» уже существует в архиве. Восстановить его вместо создания новой записи?` : ''}
+        confirmText="Восстановить"
+        cancelText="Отмена"
+        variant="warning"
+        isLoading={restoreShiftScheduleMutation.isPending}
+        onConfirm={() => archivedDuplicateCandidate && handleRestoreSchedule(archivedDuplicateCandidate.id, 'Архивное расписание восстановлено')}
+        onCancel={() => setArchivedDuplicateCandidate(null)}
       />
     </PageContainer>
   );

@@ -3,8 +3,17 @@ import { shiftSchedulesApi, type CreateShiftScheduleRequest, type UpdateShiftSch
 
 export const useShiftSchedules = (dealershipId?: number, activeOnly?: boolean) => {
   return useQuery({
-    queryKey: ['shift-schedules', dealershipId, activeOnly],
-    queryFn: () => shiftSchedulesApi.getAll(dealershipId, activeOnly),
+    queryKey: ['shift-schedules', dealershipId, activeOnly, false],
+    queryFn: () => shiftSchedulesApi.getAll(dealershipId, activeOnly, false),
+    enabled: !!dealershipId,
+    staleTime: 5 * 60 * 1000, // 5 минут
+  });
+};
+
+export const useArchivedShiftSchedules = (dealershipId?: number) => {
+  return useQuery({
+    queryKey: ['shift-schedules', dealershipId, false, true],
+    queryFn: () => shiftSchedulesApi.getAll(dealershipId, false, true),
     enabled: !!dealershipId,
     staleTime: 5 * 60 * 1000, // 5 минут
   });
@@ -46,6 +55,17 @@ export const useDeleteShiftSchedule = () => {
 
   return useMutation({
     mutationFn: (id: number) => shiftSchedulesApi.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['shift-schedules'] });
+    },
+  });
+};
+
+export const useRestoreShiftSchedule = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: number) => shiftSchedulesApi.restore(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['shift-schedules'] });
     },

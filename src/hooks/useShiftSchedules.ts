@@ -45,7 +45,23 @@ export const useUpdateShiftSchedule = () => {
   return useMutation({
     mutationFn: ({ id, data }: { id: number; data: UpdateShiftScheduleRequest }) =>
       shiftSchedulesApi.update(id, data),
-    onSuccess: () => {
+    onSuccess: (response) => {
+      const updatedSchedule = response.data;
+      const activeQueryKey = ['shift-schedules', updatedSchedule.dealership_id, undefined, false];
+
+      queryClient.setQueryData<ShiftScheduleApiResponse | undefined>(activeQueryKey, (current) => {
+        if (!current) {
+          return current;
+        }
+
+        return {
+          ...current,
+          data: current.data
+            .map((schedule) => schedule.id === updatedSchedule.id ? { ...schedule, ...updatedSchedule } : schedule)
+            .sort((a: ShiftSchedule, b: ShiftSchedule) => a.sort_order - b.sort_order || a.id - b.id),
+        };
+      });
+
       queryClient.invalidateQueries({ queryKey: ['shift-schedules'] });
     },
   });
@@ -55,8 +71,45 @@ export const useDeleteShiftSchedule = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: number) => shiftSchedulesApi.delete(id),
-    onSuccess: () => {
+    mutationFn: async (schedule: ShiftSchedule | number) => {
+      const scheduleId = typeof schedule === 'number' ? schedule : schedule.id;
+      await shiftSchedulesApi.delete(scheduleId);
+      return typeof schedule === 'number' ? null : schedule;
+    },
+    onSuccess: (deletedSchedule) => {
+      if (deletedSchedule) {
+        const activeQueryKey = ['shift-schedules', deletedSchedule.dealership_id, undefined, false];
+        const archivedQueryKey = ['shift-schedules', deletedSchedule.dealership_id, false, true];
+
+        queryClient.setQueryData<ShiftScheduleApiResponse | undefined>(activeQueryKey, (current) => {
+          if (!current) {
+            return current;
+          }
+
+          return {
+            ...current,
+            data: current.data.filter((schedule) => schedule.id !== deletedSchedule.id),
+          };
+        });
+
+        queryClient.setQueryData<ShiftScheduleApiResponse | undefined>(archivedQueryKey, (current) => {
+          if (!current) {
+            return current;
+          }
+
+          return {
+            ...current,
+            data: [
+              {
+                ...deletedSchedule,
+                deleted_at: new Date().toISOString(),
+              },
+              ...current.data.filter((schedule) => schedule.id !== deletedSchedule.id),
+            ],
+          };
+        });
+      }
+
       queryClient.invalidateQueries({ queryKey: ['shift-schedules'] });
     },
   });

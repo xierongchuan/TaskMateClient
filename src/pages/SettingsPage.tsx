@@ -76,6 +76,9 @@ export const SettingsPage: React.FC = () => {
   const [shiftSchedulesView, setShiftSchedulesView] = useState<'active' | 'archived'>('active');
   const [restoreCandidate, setRestoreCandidate] = useState<ShiftSchedule | null>(null);
   const [archivedDuplicateCandidate, setArchivedDuplicateCandidate] = useState<ShiftSchedule | null>(null);
+  const [archiveCandidate, setArchiveCandidate] = useState<ShiftSchedule | null>(null);
+  const [editingScheduleId, setEditingScheduleId] = useState<number | null>(null);
+  const [editingScheduleName, setEditingScheduleName] = useState('');
 
   // Initialize notification config with default values
   const [notificationConfig, setNotificationConfig] = useState<NotificationConfig>({
@@ -439,6 +442,38 @@ export const SettingsPage: React.FC = () => {
         }
 
         showToast({ type: 'error', message: error?.response?.data?.message || 'Ошибка создания смены' });
+      },
+    });
+  };
+
+  const startRenameSchedule = (schedule: ShiftSchedule) => {
+    setEditingScheduleId(schedule.id);
+    setEditingScheduleName(schedule.name);
+  };
+
+  const cancelRenameSchedule = () => {
+    setEditingScheduleId(null);
+    setEditingScheduleName('');
+  };
+
+  const saveRenameSchedule = (schedule: ShiftSchedule) => {
+    const trimmedName = editingScheduleName.trim();
+
+    if (!trimmedName || trimmedName === schedule.name) {
+      cancelRenameSchedule();
+      return;
+    }
+
+    updateShiftScheduleMutation.mutate({
+      id: schedule.id,
+      data: { name: trimmedName },
+    }, {
+      onSuccess: () => {
+        cancelRenameSchedule();
+        showToast({ type: 'success', message: 'Название смены обновлено' });
+      },
+      onError: (error: any) => {
+        showToast({ type: 'error', message: error?.response?.data?.message || 'Ошибка переименования' });
       },
     });
   };
@@ -866,35 +901,82 @@ export const SettingsPage: React.FC = () => {
                           {activeShiftSchedules.map((schedule, index) => (
                             <Card key={schedule.id}>
                               <Card.Body>
-                                <div className="flex items-center justify-between mb-4 pb-2 border-b border-gray-100 dark:border-gray-700">
-                                  <h4 className="font-medium text-gray-900 dark:text-white flex items-center">
-                                    <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs mr-2 ${
-                                      index % 2 === 0
-                                        ? 'bg-accent-100 dark:bg-accent-900/50 text-accent-600 dark:text-accent-300'
-                                        : 'bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-300'
-                                    }`}>
-                                      {index + 1}
-                                    </span>
-                                    {schedule.name}
-                                    {schedule.is_night_shift && (
-                                      <MoonIcon className="w-4 h-4 ml-1 text-indigo-400" title="Ночная смена" />
-                                    )}
-                                  </h4>
-                                  <Button
-                                    type="button"
-                                    size="sm"
-                                    variant="ghost"
-                                    className="text-red-500 hover:text-red-700"
-                                    disabled={deleteShiftScheduleMutation.isPending}
-                                    onClick={() => {
-                                      deleteShiftScheduleMutation.mutate(schedule.id, {
-                                        onSuccess: () => showToast({ type: 'success', message: 'Смена удалена' }),
-                                        onError: (error: any) => showToast({ type: 'error', message: error?.response?.data?.message || 'Ошибка удаления' }),
-                                      });
-                                    }}
-                                  >
-                                    Удалить
-                                  </Button>
+                                <div className="mb-4 pb-3 border-b border-gray-100 dark:border-gray-700">
+                                  <div className="flex items-start justify-between gap-4">
+                                    <div className="min-w-0 flex-1">
+                                      <div className="flex items-center min-w-0">
+                                        <span className={`w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center text-xs mr-2 ${
+                                          index % 2 === 0
+                                            ? 'bg-accent-100 dark:bg-accent-900/50 text-accent-600 dark:text-accent-300'
+                                            : 'bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-300'
+                                        }`}>
+                                          {index + 1}
+                                        </span>
+
+                                        {editingScheduleId === schedule.id ? (
+                                          <div className="flex-1 min-w-0">
+                                            <Input
+                                              value={editingScheduleName}
+                                              onChange={(e) => setEditingScheduleName(e.target.value)}
+                                              placeholder="Название смены"
+                                            />
+                                          </div>
+                                        ) : (
+                                          <h4 className="font-medium text-gray-900 dark:text-white flex items-center min-w-0">
+                                            <span className="truncate">{schedule.name}</span>
+                                            {schedule.is_night_shift && (
+                                              <MoonIcon className="w-4 h-4 ml-1 text-indigo-400 flex-shrink-0" title="Ночная смена" />
+                                            )}
+                                          </h4>
+                                        )}
+                                      </div>
+
+                                      <div className="mt-3 flex flex-wrap gap-2">
+                                        {editingScheduleId === schedule.id ? (
+                                          <>
+                                            <Button
+                                              type="button"
+                                              size="sm"
+                                              variant="primary"
+                                              disabled={!editingScheduleName.trim() || updateShiftScheduleMutation.isPending}
+                                              onClick={() => saveRenameSchedule(schedule)}
+                                            >
+                                              Сохранить
+                                            </Button>
+                                            <Button
+                                              type="button"
+                                              size="sm"
+                                              variant="secondary"
+                                              disabled={updateShiftScheduleMutation.isPending}
+                                              onClick={cancelRenameSchedule}
+                                            >
+                                              Отмена
+                                            </Button>
+                                          </>
+                                        ) : (
+                                          <Button
+                                            type="button"
+                                            size="sm"
+                                            variant="secondary"
+                                            onClick={() => startRenameSchedule(schedule)}
+                                          >
+                                            Переименовать
+                                          </Button>
+                                        )}
+                                      </div>
+                                    </div>
+
+                                    <Button
+                                      type="button"
+                                      size="sm"
+                                      variant="ghost"
+                                      className="text-red-500 hover:text-red-700"
+                                      disabled={deleteShiftScheduleMutation.isPending}
+                                      onClick={() => setArchiveCandidate(schedule)}
+                                    >
+                                      Архивировать
+                                    </Button>
+                                  </div>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                   <Input
@@ -1233,6 +1315,35 @@ export const SettingsPage: React.FC = () => {
         isLoading={restoreShiftScheduleMutation.isPending}
         onConfirm={() => archivedDuplicateCandidate && handleRestoreSchedule(archivedDuplicateCandidate.id, 'Архивное расписание восстановлено')}
         onCancel={() => setArchivedDuplicateCandidate(null)}
+      />
+
+      <ConfirmDialog
+        isOpen={archiveCandidate !== null}
+        title="Архивировать смену?"
+        message={archiveCandidate ? `Смена «${archiveCandidate.name}» будет скрыта из активного списка и попадёт в архив.` : ''}
+        confirmText="Архивировать"
+        cancelText="Отмена"
+        variant="warning"
+        isLoading={deleteShiftScheduleMutation.isPending}
+        onConfirm={() => {
+          if (!archiveCandidate) {
+            return;
+          }
+
+          deleteShiftScheduleMutation.mutate(archiveCandidate, {
+            onSuccess: () => {
+              if (editingScheduleId === archiveCandidate.id) {
+                cancelRenameSchedule();
+              }
+              setArchiveCandidate(null);
+              showToast({ type: 'success', message: 'Смена архивирована' });
+            },
+            onError: (error: any) => {
+              showToast({ type: 'error', message: error?.response?.data?.message || 'Ошибка архивирования' });
+            },
+          });
+        }}
+        onCancel={() => setArchiveCandidate(null)}
       />
     </PageContainer>
   );

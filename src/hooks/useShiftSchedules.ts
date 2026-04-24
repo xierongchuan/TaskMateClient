@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { shiftSchedulesApi, type CreateShiftScheduleRequest, type UpdateShiftScheduleRequest } from '../api/shiftSchedules';
+import { shiftSchedulesApi, type CreateShiftScheduleRequest, type ShiftScheduleApiResponse, type UpdateShiftScheduleRequest } from '../api/shiftSchedules';
+import type { ShiftSchedule } from '../types/shift';
 
 export const useShiftSchedules = (dealershipId?: number, activeOnly?: boolean) => {
   return useQuery({
@@ -66,7 +67,37 @@ export const useRestoreShiftSchedule = () => {
 
   return useMutation({
     mutationFn: (id: number) => shiftSchedulesApi.restore(id),
-    onSuccess: () => {
+    onSuccess: (response) => {
+      const restoredSchedule = response.data;
+      const activeQueryKey = ['shift-schedules', restoredSchedule.dealership_id, undefined, false];
+      const archivedQueryKey = ['shift-schedules', restoredSchedule.dealership_id, false, true];
+
+      queryClient.setQueryData<ShiftScheduleApiResponse | undefined>(activeQueryKey, (current) => {
+        if (!current) {
+          return current;
+        }
+
+        const withoutDuplicate = current.data.filter((schedule) => schedule.id !== restoredSchedule.id);
+        const nextData = [...withoutDuplicate, { ...restoredSchedule, deleted_at: null }]
+          .sort((a: ShiftSchedule, b: ShiftSchedule) => a.sort_order - b.sort_order || a.id - b.id);
+
+        return {
+          ...current,
+          data: nextData,
+        };
+      });
+
+      queryClient.setQueryData<ShiftScheduleApiResponse | undefined>(archivedQueryKey, (current) => {
+        if (!current) {
+          return current;
+        }
+
+        return {
+          ...current,
+          data: current.data.filter((schedule) => schedule.id !== restoredSchedule.id),
+        };
+      });
+
       queryClient.invalidateQueries({ queryKey: ['shift-schedules'] });
     },
   });

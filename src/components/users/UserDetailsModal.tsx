@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -28,6 +28,8 @@ interface UserDetailsModalProps {
   onClose: () => void;
   user: User | null;
   onEdit?: (user: User) => void;
+  dateFrom?: string;
+  dateTo?: string;
 }
 
 // Описания ролей
@@ -80,20 +82,33 @@ export const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
   onClose,
   user,
   onEdit,
+  dateFrom,
+  dateTo,
 }) => {
   const navigate = useNavigate();
   const permissions = usePermissions();
-  const [periodDays, setPeriodDays] = useState('30');
+  const [periodDays, setPeriodDays] = useState(() => (dateFrom && dateTo ? 'custom' : '30'));
+
+  useEffect(() => {
+    setPeriodDays(dateFrom && dateTo ? 'custom' : '30');
+  }, [dateFrom, dateTo, user?.id, isOpen]);
 
   const dateRange = useMemo(() => {
+    if (periodDays === 'custom' && dateFrom && dateTo) {
+      return {
+        from: dateFrom,
+        to: dateTo,
+      };
+    }
+
     const to = new Date();
     const from = new Date();
-    from.setDate(from.getDate() - parseInt(periodDays));
+    from.setDate(from.getDate() - parseInt(periodDays, 10));
     return {
       from: from.toISOString().split('T')[0],
       to: to.toISOString().split('T')[0],
     };
-  }, [periodDays]);
+  }, [dateFrom, dateTo, periodDays]);
 
   const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ['userStats', user?.id, dateRange.from, dateRange.to],
@@ -240,6 +255,9 @@ export const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
                   {periodOptions.map((opt) => (
                     <option key={opt.value} value={opt.value}>{opt.label}</option>
                   ))}
+                  {dateFrom && dateTo && (
+                    <option value="custom">Период отчёта</option>
+                  )}
                 </select>
               </div>
 

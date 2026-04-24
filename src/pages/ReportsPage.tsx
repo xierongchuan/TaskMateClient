@@ -472,6 +472,8 @@ export const ReportsPage: React.FC = () => {
         isOpen={!!selectedEmployee}
         onClose={() => setSelectedEmployee(null)}
         user={selectedEmployee}
+        dateFrom={dateRange.from}
+        dateTo={dateRange.to}
       />
 
       <IssueDetailsModal

@@ -8,7 +8,7 @@ import { useResponsiveViewMode } from '../hooks/useResponsiveViewMode';
 import { TaskGeneratorModal } from '../components/generators/TaskGeneratorModal';
 import { GeneratorDetailsModal } from '../components/generators/GeneratorDetailsModal';
 import type { TaskGenerator, TaskGeneratorFilters } from '../types/taskGenerator';
-import { formatDateTime, formatDateTimeShort } from '../utils/dateTime';
+import { formatDateTime, formatDateTimeShort, utcGeneratorTimeToLocal } from '../utils/dateTime';
 
 // UI Components
 import {
@@ -386,7 +386,7 @@ export const TaskGeneratorsPage: React.FC = () => {
                         <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-gray-500 dark:text-gray-400">
                           <span className="flex items-center gap-1">
                             <ClockIcon className="w-4 h-4" />
-                            {generator.recurrence_time?.slice(0, 5)} → {generator.deadline_time?.slice(0, 5)}
+                            {utcGeneratorTimeToLocal(generator.recurrence_time)} → {utcGeneratorTimeToLocal(generator.deadline_time)}
                           </span>
                           <span className="flex items-center gap-1">
                             <UserIcon className="w-4 h-4" />
@@ -547,7 +547,7 @@ export const TaskGeneratorsPage: React.FC = () => {
                       <div className="flex items-center text-sm text-gray-600 dark:text-gray-300 gap-2">
                         <ClockIcon className="w-4 h-4" />
                         <span>
-                          {getRecurrenceLabel(generator.recurrence)} в {generator.recurrence_time?.slice(0, 5)}
+                          {getRecurrenceLabel(generator.recurrence)} в {utcGeneratorTimeToLocal(generator.recurrence_time)}
                         </span>
                       </div>
 

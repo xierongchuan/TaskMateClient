@@ -162,6 +162,69 @@ export function localTimeToUtc(localTime: string | null | undefined): string {
   return `${utcHours}:${utcMinutes}`;
 }
 
+function parseTimeParts(time: string): { hours: number; minutes: number; seconds: number; hasSeconds: boolean } {
+  const parts = time.split(':').map(Number);
+  const [hours, minutes, seconds = 0] = parts;
+
+  return {
+    hours,
+    minutes,
+    seconds,
+    hasSeconds: parts.length >= 3,
+  };
+}
+
+/**
+ * Конвертация UTC времени генератора (HH:mm[:ss]) в локальное HH:mm.
+ *
+ * В отличие от formatTime(), работает с plain-time значением, а не с ISO datetime.
+ */
+export function utcGeneratorTimeToLocal(time: string | null | undefined): string {
+  if (!time) return '';
+
+  const today = new Date();
+  const { hours, minutes, seconds } = parseTimeParts(time);
+  const utcDate = new Date(
+    Date.UTC(today.getFullYear(), today.getMonth(), today.getDate(), hours, minutes, seconds)
+  );
+
+  return format(utcDate, 'HH:mm');
+}
+
+/**
+ * Конвертация локального времени генератора (HH:mm[:ss]) в UTC время.
+ *
+ * По умолчанию возвращает HH:mm, чтобы сохранить текущий контракт формы/API.
+ * При includeSeconds=true возвращает HH:mm:ss.
+ */
+export function localGeneratorTimeToUtc(
+  time: string | null | undefined,
+  includeSeconds: boolean = false
+): string {
+  if (!time) return '';
+
+  const today = new Date();
+  const { hours, minutes, seconds, hasSeconds } = parseTimeParts(time);
+  const localDate = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate(),
+    hours,
+    minutes,
+    seconds
+  );
+
+  const utcHours = localDate.getUTCHours().toString().padStart(2, '0');
+  const utcMinutes = localDate.getUTCMinutes().toString().padStart(2, '0');
+
+  if (includeSeconds || hasSeconds) {
+    const utcSeconds = localDate.getUTCSeconds().toString().padStart(2, '0');
+    return `${utcHours}:${utcMinutes}:${utcSeconds}`;
+  }
+
+  return `${utcHours}:${utcMinutes}`;
+}
+
 /**
  * Проверка: дата в прошлом (сравнение с текущим временем).
  */

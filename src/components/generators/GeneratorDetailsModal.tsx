@@ -1,6 +1,6 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { formatDate } from '../../utils/dateTime';
+import { formatDate, utcGeneratorTimeToLocal } from '../../utils/dateTime';
 import {
   PencilIcon,
   CalendarIcon,
@@ -95,7 +95,7 @@ export const GeneratorDetailsModal: React.FC<GeneratorDetailsModalProps> = ({
 
   const formatTime = (time: string | null) => {
     if (!time) return '—';
-    return time.slice(0, 5);
+    return utcGeneratorTimeToLocal(time);
   };
 
   const formatMinutes = (minutes: number | null | undefined) => {

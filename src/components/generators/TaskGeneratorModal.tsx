@@ -13,7 +13,7 @@ import type { ApiErrorResponse, ResponseType } from '../../types/task';
 import { RESPONSE_TYPES, RESPONSE_TYPE_LABELS } from '../../constants/tasks';
 import { Alert, Input, Textarea, Select, Button, Modal } from '../ui';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
-import { getTodayDateString } from '../../utils/dateTime';
+import { getTodayDateString, localGeneratorTimeToUtc, utcGeneratorTimeToLocal } from '../../utils/dateTime';
 import { useResponsiveViewMode } from '../../hooks/useResponsiveViewMode';
 
 interface TaskGeneratorModalProps {
@@ -88,8 +88,8 @@ export const TaskGeneratorModal: React.FC<TaskGeneratorModalProps> = ({
         comment: generator.comment || '',
         dealership_id: generator.dealership_id,
         recurrence: generator.recurrence,
-        recurrence_time: generator.recurrence_time?.slice(0, 5) || '09:00',
-        deadline_time: generator.deadline_time?.slice(0, 5) || '18:00',
+        recurrence_time: utcGeneratorTimeToLocal(generator.recurrence_time) || '09:00',
+        deadline_time: utcGeneratorTimeToLocal(generator.deadline_time) || '18:00',
         recurrence_days_of_week: generator.recurrence_days_of_week || [],
         recurrence_days_of_month: generator.recurrence_days_of_month || [],
         start_date: generator.start_date?.split('T')[0] || '',
@@ -201,8 +201,8 @@ export const TaskGeneratorModal: React.FC<TaskGeneratorModalProps> = ({
       comment: formData.comment || undefined,
       dealership_id: formData.dealership_id!,
       recurrence: formData.recurrence,
-      recurrence_time: formData.recurrence_time,
-      deadline_time: formData.deadline_time,
+      recurrence_time: localGeneratorTimeToUtc(formData.recurrence_time),
+      deadline_time: localGeneratorTimeToUtc(formData.deadline_time),
       recurrence_days_of_week: formData.recurrence === 'weekly' && formData.recurrence_days_of_week.length > 0
         ? formData.recurrence_days_of_week
         : undefined,
